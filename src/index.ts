@@ -1,12 +1,13 @@
 import express from 'express'
+import dotenv from 'dotenv'
+import usersRouter from './routes/users.routers'
+dotenv.config()
 const app = express()
 
-const PORT = 4000
-const hostname = 'localhost'
-app.get('/', (req, res) => {
-  res.send('Success')
-})
-const myName: string = 'dat'
-app.listen(PORT, hostname, () => {
-  console.log(`Server running at http://${hostname}:${PORT}/`)
+const PORT = process.env.PORT
+const DOMAIN = process.env.DOMAIN
+app.use(express.json())
+app.use('/users', usersRouter)
+app.listen(PORT, () => {
+  console.log(`Server running at http://${DOMAIN}:${PORT}/`)
 })
