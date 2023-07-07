@@ -1,7 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import usersRouter from './routes/users.routers'
-import databaseService from './models/services/database.services'
+import databaseService from './services/database.services'
 dotenv.config()
 const app = express()
 
