@@ -1,13 +1,15 @@
 import { User } from '~/models/schemas/User.chema'
 import databaseService from './database.services'
+import { IRegisterReqBody } from '~/models/request/User.requests'
+import { hashPassword } from '~/utils/crypto'
 
 class UsersService {
-  public async register(payload: { email: string; password: string }) {
-    const { email, password } = payload
+  public async register(payload: IRegisterReqBody) {
     const result = await databaseService.users.insertOne(
       new User({
-        email,
-        password
+        ...payload,
+        date_of_birth: new Date(payload.date_of_birth),
+        password: hashPassword(payload.password)
       })
     )
     return result

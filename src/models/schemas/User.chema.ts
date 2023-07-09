@@ -3,9 +3,9 @@ import { UserVerifyStatus } from '~/constants/enum'
 
 interface IUser {
   _id?: ObjectId
-  name?: string
+  name: string
   email: string
-  date_of_birth?: Date
+  date_of_birth: Date
   password: string
   created_at?: Date
   updated_at?: Date
