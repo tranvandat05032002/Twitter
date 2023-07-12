@@ -52,6 +52,13 @@ class UsersService {
       refreshToken
     }
   }
+  public async login(user_id: string) {
+    const [accessToken, refreshToken] = await this.SignAccessAndRefreshToken({ user_id })
+    return {
+      accessToken,
+      refreshToken
+    }
+  }
   public async checkExistEmail(email: string) {
     const user = await databaseService.users.findOne({ email })
     return Boolean(user)
