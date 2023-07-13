@@ -6,6 +6,7 @@ import { signToken } from '~/utils/jwt'
 import dotenv from 'dotenv'
 import { TokenType } from '~/constants/enum'
 import { ObjectId } from 'mongodb'
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
 dotenv.config()
 
 class UsersService {
@@ -46,17 +47,29 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
-    const [accessToken, refreshToken] = await this.SignAccessAndRefreshToken({ user_id: user_id.toString() })
+    const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id: user_id.toString() })
+    await databaseService.RefreshToken.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refresh_token
+      })
+    )
     return {
-      accessToken,
-      refreshToken
+      access_token,
+      refresh_token
     }
   }
   public async login(user_id: string) {
-    const [accessToken, refreshToken] = await this.SignAccessAndRefreshToken({ user_id })
+    const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id })
+    await databaseService.RefreshToken.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refresh_token
+      })
+    )
     return {
-      accessToken,
-      refreshToken
+      access_token,
+      refresh_token
     }
   }
   public async checkExistEmail(email: string) {
