@@ -5,6 +5,12 @@ import { loginValidator, registerValidator } from '~/middlewares/users.middlewar
 
 const usersRouter = Router()
 
+/**
+ * Description. Login a user
+ * Path: /login
+ * Method: POST
+ * Body: { email: string, password: string }
+ */
 usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
 usersRouter.post('/register', registerValidator, wrapRequestHandler(registerController))
 export default usersRouter
