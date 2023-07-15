@@ -208,7 +208,7 @@ export const refreshTokenValidator = validate(
                 verifyToken({
                   token: value
                 }),
-                databaseService.RefreshToken.findOne({
+                databaseService.RefreshTokens.findOne({
                   token: value
                 })
               ])

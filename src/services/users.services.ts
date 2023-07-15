@@ -49,7 +49,7 @@ class UsersService {
       })
     )
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id: user_id.toString() })
-    await databaseService.RefreshToken.insertOne(
+    await databaseService.RefreshTokens.insertOne(
       new RefreshToken({
         user_id: new ObjectId(user_id),
         token: refresh_token
@@ -62,7 +62,7 @@ class UsersService {
   }
   public async login(user_id: string) {
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id })
-    await databaseService.RefreshToken.insertOne(
+    await databaseService.RefreshTokens.insertOne(
       new RefreshToken({
         user_id: new ObjectId(user_id),
         token: refresh_token
@@ -78,9 +78,26 @@ class UsersService {
     return Boolean(user)
   }
   public async logout(refresh_token: string) {
-    await databaseService.RefreshToken.deleteOne({ token: refresh_token })
+    await databaseService.RefreshTokens.deleteOne({ token: refresh_token })
     return {
       message: USERS_MESSAGES.LOGOUT_SUCCESS
+    }
+  }
+  public async refreshToken({ user_id, refresh_token }: { user_id: string; refresh_token: string }) {
+    const [new_access_token, new_refresh_token] = await Promise.all([
+      this.signAccessToken({ user_id }),
+      this.signRefreshToken({ user_id }),
+      databaseService.RefreshTokens.deleteOne({ token: refresh_token })
+    ])
+    await databaseService.RefreshTokens.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: new_refresh_token
+      })
+    )
+    return {
+      access_token: new_access_token,
+      refresh_token: new_refresh_token
     }
   }
 }

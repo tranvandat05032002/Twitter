@@ -1,6 +1,6 @@
 import wrapRequestHandler from '~/utils/handlers'
 import { Router } from 'express'
-import { loginController, logoutController, registerController } from '~/controllers/users.controllers'
+import { loginController, logoutController, refreshTokenController, registerController } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
   loginValidator,
@@ -32,4 +32,12 @@ usersRouter.post('/register', registerValidator, wrapRequestHandler(registerCont
  * Body: { refresh_token: string }
  */
 usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
+/**
+ * Description. Logout a user
+ * Path: /logout
+ * Method: POST
+ * Body: { refresh_token: string }
+ */
+usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(refreshTokenController))
+
 export default usersRouter
