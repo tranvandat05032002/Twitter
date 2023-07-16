@@ -4,6 +4,7 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/message'
 import { ErrorWithStatus } from '~/models/Errors'
+import { TokenPayload } from '~/models/request/User.requests'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto'
@@ -234,6 +235,40 @@ export const refreshTokenValidator = validate(
               }
               throw error
             }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+export const verifyEmailTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
+              })
+              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: normalization((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
             return true
           }
         }
