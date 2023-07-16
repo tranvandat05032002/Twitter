@@ -202,7 +202,7 @@ export const refreshTokenValidator = validate(
         trim: true,
         custom: {
           options: async (value, { req }) => {
-            if (value === '') {
+            if (!value) {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNAUTHORIZED
