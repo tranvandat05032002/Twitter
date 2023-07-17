@@ -125,8 +125,10 @@ class UsersService {
         {
           $set: {
             email_verify_token: '',
-            verify: UserVerifyStatus.Verified,
-            updated_at: new Date()
+            verify: UserVerifyStatus.Verified
+          },
+          $currentDate: {
+            updated_at: true
           }
         }
       )
