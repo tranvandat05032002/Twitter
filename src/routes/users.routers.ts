@@ -5,6 +5,7 @@ import {
   logoutController,
   refreshTokenController,
   registerController,
+  resendVerifyEmailController,
   verifyEmailTokenController
 } from '~/controllers/users.controllers'
 import {
@@ -54,5 +55,14 @@ usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(ref
  * Body: { refresh_token: string }
  */
 usersRouter.post('/verify-email', verifyEmailTokenValidator, wrapRequestHandler(verifyEmailTokenController))
+
+/**
+ * Description. Resend verify email when user client click on the link in email
+ * Path: /resend-verify-email
+ * Method: POST
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: { }
+ */
+usersRouter.post('/resend-verify-email', accessTokenValidator, wrapRequestHandler(resendVerifyEmailController))
 
 export default usersRouter
