@@ -23,22 +23,22 @@ export interface IUser {
 
 export default class User {
   _id?: ObjectId
-  private name: string
-  private email: string
-  private date_of_birth: Date
-  private password: string
-  private created_at: Date
-  private updated_at: Date
-  private email_verify_token: string
-  private forgot_password_token: string
-  private verify: UserVerifyStatus
+  name: string
+  email: string
+  date_of_birth: Date
+  password: string
+  created_at: Date
+  updated_at: Date
+  email_verify_token: string
+  forgot_password_token: string
+  verify: UserVerifyStatus
 
-  private bio: string
-  private location: string
-  private website: string
-  private username: string
-  private avatar: string
-  private cover_photo: string
+  bio: string
+  location: string
+  website: string
+  username: string
+  avatar: string
+  cover_photo: string
 
   constructor(user: IUser) {
     const date = new Date()
