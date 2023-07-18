@@ -48,6 +48,18 @@ class UsersService {
       privateKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
     })
   }
+  private signForgotPassword({ user_id }: { user_id: string }) {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.ForgotPasswordToken
+      },
+      options: {
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+    })
+  }
   private SignAccessAndRefreshToken({ user_id }: { user_id: string }) {
     return Promise.all([this.signAccessToken({ user_id }), this.signRefreshToken({ user_id })])
   }
@@ -156,8 +168,30 @@ class UsersService {
         }
       }
     )
+    console.log('email_verify_token: ', email_verify_token)
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
+    }
+  }
+  public async forgotPassword(user_id: string) {
+    const forgot_password_token = await this.signForgotPassword({ user_id })
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          forgot_password_token
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    // send email and link to email of userL https://twitter.com/forgot-password?token=token
+    console.log('forgot_password_token: ', forgot_password_token)
+    return {
+      message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
   }
 }
