@@ -2,6 +2,7 @@ import wrapRequestHandler from '~/utils/handlers'
 import { Router } from 'express'
 import {
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -97,4 +98,10 @@ usersRouter.post(
  */
 usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
 
+/**
+ * Description. get me
+ * Path: /me
+ * Method: GET
+ */
+usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
 export default usersRouter
