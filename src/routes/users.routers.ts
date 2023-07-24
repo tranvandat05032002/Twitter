@@ -1,3 +1,4 @@
+import { UpdateMeReqBody } from '~/models/request/User.requests'
 import wrapRequestHandler from '~/utils/handlers'
 import { Router } from 'express'
 import {
@@ -25,6 +26,7 @@ import {
   verifyEmailTokenValidator,
   verifyForgotForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
+import { filterMiddleWare } from '~/middlewares/common.middleware'
 
 const usersRouter = Router()
 
@@ -121,6 +123,16 @@ usersRouter.patch(
   accessTokenValidator,
   verifiedUserValidator,
   updateMeValidator,
+  filterMiddleWare<UpdateMeReqBody>([
+    'name',
+    'date_of_birth',
+    'bio',
+    'location',
+    'website',
+    'username',
+    'avatar',
+    'cover_photo'
+  ]),
   wrapRequestHandler(updateMeController)
 )
 export default usersRouter

@@ -14,7 +14,6 @@ app.use(express.json())
 app.use('/users', usersRouter)
 app.use(defaultHandleError)
 
-
 app.listen(PORT, () => {
   console.log(`Server running at http://${DOMAIN}:${PORT}/`)
 })
