@@ -1,4 +1,4 @@
-import { ErrorEntity, ErrorWithStatus } from './../models/Errors'
+import { ErrorEntity, ErrorWithStatus } from '../models/Errors'
 import express from 'express'
 import { validationResult, ValidationChain } from 'express-validator'
 import { RunnableValidationChains } from 'express-validator/src/middlewares/schema'
