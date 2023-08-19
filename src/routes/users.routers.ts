@@ -64,7 +64,7 @@ usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(ref
  * Description. Verify email when user client click on the link in email
  * Path: /verify-email
  * Method: POST
- * Body: { refresh_token: string }
+ * Body: { email_verify-token: string }
  */
 usersRouter.post('/verify-email', verifyEmailTokenValidator, wrapRequestHandler(verifyEmailTokenController))
 

@@ -8,6 +8,8 @@ import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import { ObjectId, ReturnDocument } from 'mongodb'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import { USERS_MESSAGES } from '~/constants/message'
+import nodemailer from 'nodemailer'
+import { htmlVerify } from '~/html'
 dotenv.config()
 
 class UsersService {
@@ -51,6 +53,35 @@ class UsersService {
       privateKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
     })
   }
+  public sendVerifyEmail({ email, emailVerifyToken }: { email: string; emailVerifyToken: string }) {
+    return new Promise((resolve, reject) => {
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+          user: 'tranvandatevondev0503@gmail.com',
+          pass: 'mkhkbzpolcecemmy'
+        }
+      })
+
+      const mailOptions = {
+        from: 'tranvandatevondev0503@gmail.com',
+        to: email,
+        subject: 'Twitter verify your email',
+        // path front-end
+        html: htmlVerify(emailVerifyToken)
+      }
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log('Error sending email:', error)
+          reject(error)
+        } else {
+          console.log('Email sent:', info.response)
+          resolve(info.response)
+        }
+      })
+    })
+  }
   private signForgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
       payload: {
@@ -82,6 +113,8 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
+    // eslint-disable-next-line prettier/prettier
+    await this.sendVerifyEmail({ email: payload.email, emailVerifyToken: email_verify_token })
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
@@ -186,7 +219,12 @@ class UsersService {
         }
       }
     )
-    console.log('email_verify_token: ', email_verify_token)
+    const user = await this.getMe(user_id)
+    const email = user.user?.email
+    await this.sendVerifyEmail({
+      email: email as string,
+      emailVerifyToken: email_verify_token
+    })
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
     }
