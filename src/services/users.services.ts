@@ -12,6 +12,12 @@ import nodemailer from 'nodemailer'
 import { htmlVerify } from '~/html'
 dotenv.config()
 
+interface INodeMailer {
+  from?: string
+  to: string
+  subject: string
+  html: string
+}
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
@@ -53,34 +59,41 @@ class UsersService {
       privateKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
     })
   }
-  public sendVerifyEmail({ email, emailVerifyToken }: { email: string; emailVerifyToken: string }) {
-    return new Promise((resolve, reject) => {
+  public async sendEmailToken(mailModel: INodeMailer) {
+    try {
       const transporter = nodemailer.createTransport({
         service: 'Gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: false,
         auth: {
           user: 'tranvandatevondev0503@gmail.com',
           pass: 'mkhkbzpolcecemmy'
         }
       })
-
-      const mailOptions = {
-        from: 'tranvandatevondev0503@gmail.com',
-        to: email,
-        subject: 'Twitter verify your email',
-        // path front-end
-        html: htmlVerify(emailVerifyToken)
-      }
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.log('Error sending email:', error)
-          reject(error)
-        } else {
-          console.log('Email sent:', info.response)
-          resolve(info.response)
+      return new Promise(function (resolve, reject) {
+        const mailOptions = {
+          from: mailModel.from || 'tranvandatevondev0503@gmail.com',
+          to: mailModel.to,
+          subject: mailModel.subject,
+          // path front-end
+          html: mailModel.html
         }
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log('Error sending email:', error)
+            reject(error)
+          } else {
+            console.log('Email sent:', info.response)
+            resolve(info.response)
+          }
+        })
       })
-    })
+    } catch (error) {
+      console.log(error)
+      return Promise.reject(error)
+    }
   }
   private signForgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
@@ -113,8 +126,11 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
-    // eslint-disable-next-line prettier/prettier
-    await this.sendVerifyEmail({ email: payload.email, emailVerifyToken: email_verify_token })
+    await this.sendEmailToken({
+      to: payload.email,
+      subject: 'Twitter verify your email',
+      html: htmlVerify(email_verify_token)
+    })
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
@@ -221,9 +237,10 @@ class UsersService {
     )
     const user = await this.getMe(user_id)
     const email = user.user?.email
-    await this.sendVerifyEmail({
-      email: email as string,
-      emailVerifyToken: email_verify_token
+    await this.sendEmailToken({
+      to: email as string,
+      subject: 'Twitter verify your email',
+      html: htmlVerify(email_verify_token)
     })
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
@@ -245,7 +262,6 @@ class UsersService {
       }
     )
     // send email and link to email of userL https://twitter.com/forgot-password?token=token
-    console.log('forgot_password_token: ', forgot_password_token)
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
