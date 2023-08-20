@@ -8,3 +8,16 @@ export default function wrapRequestHandler(Func: Express.RequestHandler) {
     }
   }
 }
+export const normalization = (value: string) => {
+  const trimValue = value.trim().split(' ')
+  let resultValue = ''
+  for (let i = 0; i < trimValue.length; i++) {
+    if (trimValue[i] !== '') {
+      const firstChar = trimValue[i].charAt(0)
+      const restChar = trimValue[i].substring(1)
+      const upperFirst = firstChar.toUpperCase()
+      resultValue += upperFirst + restChar + ' '
+    }
+  }
+  return resultValue.trim()
+}
