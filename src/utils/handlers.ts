@@ -21,3 +21,21 @@ export const normalization = (value: string) => {
   }
   return resultValue.trim()
 }
+
+// Fisher-Yates
+export function generateOTP() {
+  const digits = '0123456789'
+  const otpArray = digits.split('')
+  let OTP = ''
+
+  for (let i = otpArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[otpArray[i], otpArray[j]] = [otpArray[j], otpArray[i]]
+  }
+
+  for (let i = 0; i < 6; i++) {
+    OTP += otpArray[i]
+  }
+
+  return OTP
+}
