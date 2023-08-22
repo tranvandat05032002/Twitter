@@ -7,6 +7,9 @@ export const USERS_MESSAGES = {
   EMAIL_IS_REQUIRED: 'Email is required',
   EMAIL_IS_INVALID: 'Email is invalid',
   EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
+  EMAIL_FIND_SUCCESS: 'Email found in our system.',
+  EMAIL_NOT_FOUND: 'Email not found',
+  OTP_IS_INVALID: 'OTP is invalid',
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
   PASSWORD_LENGTH_MUST_BE_FROM_4_TO_100: 'Password length must be from 4 to 100',
@@ -22,6 +25,7 @@ export const USERS_MESSAGES = {
   LOGIN_SUCCESS: 'Login success',
   REGISTER_SUCCESS: 'Register success',
   ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
+  OTP_TOKEN_IS_REQUIRED: 'Access token is required',
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
   REFRESH_TOKEN_IS_INVALID: 'Refresh token is invalid',
   USED_REFRESH_TOKEN_OR_NOT_EXIST: 'Used refresh token or not exist',
@@ -47,7 +51,7 @@ export const USERS_MESSAGES = {
   USERNAME_MUST_BE_STRING: 'Username must be a string',
   USERNAME_INVALID:
     'Username must be 4-15 characters long and contain only letters, numbers, underscores, not only numbers',
-    USERNAME_LENGTH: 'Username length must be from 1 to 50',
+  USERNAME_LENGTH: 'Username length must be from 1 to 50',
   IMAGE_URL_MUST_BE_STRING: 'Avatar must be a string',
   IMAGE_URL_LENGTH: 'Avatar length must be from 1 to 200',
   UPDATE_ME_SUCCESS: 'Update my profile success',
@@ -63,5 +67,5 @@ export const USERS_MESSAGES = {
   GMAIL_NOT_VERIFIED: 'Gmail not verified',
   UPLOAD_SUCCESS: 'Upload success',
   REFRESH_TOKEN_SUCCESS: 'Refresh token success',
-  GET_VIDEO_STATUS_SUCCESS: 'Get video status success',
+  GET_VIDEO_STATUS_SUCCESS: 'Get video status success'
 }
