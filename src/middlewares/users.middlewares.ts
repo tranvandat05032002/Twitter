@@ -6,13 +6,14 @@ import { UserVerifyStatus } from '~/constants/enum'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/message'
 import { ErrorWithStatus } from '~/models/Errors'
-import { TokenPayload } from '~/models/request/User.requests'
+import { OTPPayload, TokenPayload } from '~/models/request/User.requests'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto'
 import { normalization } from '~/utils/handlers'
 import { verifyToken } from '~/utils/jwt'
 import { validate } from '~/utils/validation'
+import jwt from 'jsonwebtoken'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -348,6 +349,65 @@ export const forgotPasswordValidator = validate(
   )
 )
 
+export const findEmailValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: USERS_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await databaseService.users.findOne({
+              email: value
+            })
+            if (!user) {
+              throw new Error(USERS_MESSAGES.EMAIL_NOT_FOUND)
+            }
+            req.user = user
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const verifyOTPValidator = validate(
+  checkSchema(
+    {
+      Authorization: {
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            const otp_token = (value || '').split(' ')[1]
+            console.log('OTP-Token: ', otp_token)
+            if (!otp_token) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGES.OTP_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_authorization = jwt.verify(otp_token, process.env.JWT_SECRET_OTP as string) as OTPPayload
+              ;(req as Request).decoded_otp_token = decoded_authorization
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: normalization((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
 export const verifyForgotForgotPasswordTokenValidator = validate(
   checkSchema({
     forgot_password_token: forgotPasswordTokenSchema
@@ -365,7 +425,6 @@ export const resetPasswordValidator = validate(
 export const verifiedUserValidator = (req: Request, res: Response, next: NextFunction) => {
   const { verify } = req.decoded_authorization as TokenPayload
   if (verify !== UserVerifyStatus.Verified) {
-    console.log('called')
     return next(
       new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_VERIFIED,

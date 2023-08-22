@@ -10,6 +10,9 @@ import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import { USERS_MESSAGES } from '~/constants/message'
 import nodemailer from 'nodemailer'
 import { htmlVerify } from '~/html'
+import { generateOTP } from '~/utils/handlers'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 dotenv.config()
 
 interface INodeMailer {
@@ -85,13 +88,11 @@ class UsersService {
             console.log('Error sending email:', error)
             reject(error)
           } else {
-            console.log('Email sent:', info.response)
             resolve(info.response)
           }
         })
       })
     } catch (error) {
-      console.log(error)
       return Promise.reject(error)
     }
   }
@@ -246,6 +247,15 @@ class UsersService {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
     }
   }
+  public async findEmail({ user_id }: { user_id: string }) {
+    const user = await databaseService.users.findOne({
+      _id: new ObjectId(user_id)
+    })
+    return {
+      message: USERS_MESSAGES.EMAIL_FIND_SUCCESS,
+      user
+    }
+  }
   public async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     const forgot_password_token = await this.signForgotPassword({ user_id, verify })
     await databaseService.users.updateOne(
@@ -265,6 +275,74 @@ class UsersService {
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
     }
+  }
+
+  public async forgotPasswordOTP({
+    user_id,
+    email,
+    verify
+  }: {
+    user_id: string
+    email: string
+    verify: UserVerifyStatus
+  }) {
+    const otp = generateOTP()
+    const salt = await bcrypt.genSalt(10)
+    const hashedOTP = await bcrypt.hash(otp, salt)
+    const jwtToken = jwt.sign(
+      {
+        otp,
+        user_id
+      },
+      process.env.JWT_SECRET_OTP as string,
+      {
+        expiresIn: '5m'
+      }
+    )
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          forgot_password_token: hashedOTP
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    try {
+      await this.sendEmailToken({
+        to: email as string,
+        subject: 'Twitter reset your password',
+        html: `Mã OTP của bạn: ${otp}`
+      })
+    } catch (error) {
+      console.log(error)
+    }
+    return {
+      message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD,
+      jwtToken
+    }
+  }
+
+  public async verifyOTP({
+    otp_auth,
+    otp,
+    exp,
+    user_id
+  }: {
+    otp_auth: string //otp body
+    otp: string // otp of decoded
+    exp: number
+    user_id: string // get otp hash bcrypt
+  }) {
+    const { user } = await this.findEmail({
+      user_id
+    })
+    const isValidOTP = await bcrypt.compare(otp_auth, user?.forgot_password_token as string)
+    return Boolean(isValidOTP)
   }
   public async resetPassword({ user_id, password }: { user_id: string; password: string }) {
     await databaseService.users.updateOne(

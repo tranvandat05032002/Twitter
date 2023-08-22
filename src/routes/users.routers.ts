@@ -2,7 +2,9 @@ import { UpdateMeReqBody } from '~/models/request/User.requests'
 import wrapRequestHandler from '~/utils/handlers'
 import { Router } from 'express'
 import {
+  findEmailController,
   forgotPasswordController,
+  forgotPasswordOTPController,
   getMeController,
   loginController,
   logoutController,
@@ -12,10 +14,12 @@ import {
   resetPasswordController,
   updateMeController,
   verifyEmailTokenController,
-  verifyForgotPasswordController
+  verifyForgotPasswordController,
+  verifyOTPController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
+  findEmailValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
@@ -24,7 +28,8 @@ import {
   updateMeValidator,
   verifiedUserValidator,
   verifyEmailTokenValidator,
-  verifyForgotForgotPasswordTokenValidator
+  verifyForgotForgotPasswordTokenValidator,
+  verifyOTPValidator
 } from '~/middlewares/users.middlewares'
 import { filterMiddleWare } from '~/middlewares/common.middleware'
 
@@ -78,12 +83,31 @@ usersRouter.post('/verify-email', verifyEmailTokenValidator, wrapRequestHandler(
 usersRouter.post('/resend-verify-email', accessTokenValidator, wrapRequestHandler(resendVerifyEmailController))
 
 /**
+ * Description. Check email in database
+ * Path: /find-email
+ * Method: POST
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: { email: string }
+ */
+usersRouter.post('/find-email', findEmailValidator, wrapRequestHandler(findEmailController))
+
+/**
  * Description. submit email to reset password, send email to user
  * Path: /forgot-password
  * Method: POST
  * Body: { email: string }
  */
-usersRouter.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
+// usersRouter.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordController))
+
+usersRouter.post('/forgot-password', forgotPasswordValidator, wrapRequestHandler(forgotPasswordOTPController))
+/**
+ * Description. check OTP
+ * Path: /verify-forgot-password-token
+ * Method: POST
+ * Body: {OTP: string}
+ */
+
+usersRouter.post('/verify-otp', verifyOTPValidator, wrapRequestHandler(verifyOTPController))
 
 /**
  * Description. verify password token

@@ -8,6 +8,8 @@ import {
   IRegisterReqBody,
   LoginReqBody,
   LogoutReqBody,
+  OTPPayload,
+  OTPReqBody,
   RefreshTokenReqBody,
   ResetPasswordReqBody,
   TokenPayload,
@@ -112,14 +114,22 @@ export const resendVerifyEmailController = async (req: Request, res: Response, n
 
   return res.json(result)
 }
+export const findEmailController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { _id } = req.user as User
+  const result = await usersService.findEmail({ user_id: (_id as ObjectId).toString() })
 
+  return res.json(result)
+}
 export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
   res: Response,
   next: NextFunction
 ) => {
   const { _id } = req.user as User
-  console.log(_id)
   const result = await usersService.forgotPassword({
     user_id: (_id as ObjectId)?.toString(),
     verify: UserVerifyStatus.Verified
@@ -130,6 +140,34 @@ export const verifyForgotPasswordController = async (req: Request, res: Response
   return res.json({
     message: USERS_MESSAGES.VERIFY_FORGOT_PASSWORD_SUCCESS
   })
+}
+
+export const forgotPasswordOTPController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { _id, email } = req.user as User
+  const result = await usersService.forgotPasswordOTP({
+    user_id: (_id as ObjectId)?.toString(),
+    email: email as string,
+    verify: UserVerifyStatus.Verified
+  })
+  return res.json(result)
+}
+export const verifyOTPController = async (
+  req: Request<ParamsDictionary, any, OTPReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { otp_auth } = req.body
+  const { otp, exp, user_id } = req.decoded_otp_token as OTPPayload
+  const result = await usersService.verifyOTP({ otp_auth, otp, exp, user_id })
+  if (result) {
+    return res.status(200).json('Verify OTP success')
+  } else {
+    return res.status(401).json('Verify OTP failed')
+  }
 }
 export const resetPasswordController = async (
   req: Request<ParamsDictionary, any, ResetPasswordReqBody>,

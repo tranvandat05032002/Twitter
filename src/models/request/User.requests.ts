@@ -48,3 +48,11 @@ export interface ResetPasswordReqBody {
   confirm_password: string
   forgot_password_token: string
 }
+export interface OTPReqBody {
+  otp_auth: string
+}
+export interface OTPPayload extends JwtPayload {
+  user_id: string
+  otp: string
+  exp: number
+}
