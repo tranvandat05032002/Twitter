@@ -12,6 +12,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  resetPasswordOTPController,
   updateMeController,
   verifyEmailTokenController,
   verifyForgotPasswordController,
@@ -24,6 +25,7 @@ import {
   loginValidator,
   refreshTokenValidator,
   registerValidator,
+  resetPasswordOTPValidator,
   resetPasswordValidator,
   updateMeValidator,
   verifiedUserValidator,
@@ -127,8 +129,15 @@ usersRouter.post(
  * Method: POST
  * Body: {forgot_password_token: string, password: string, confirm_password: string}
  */
-usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
-
+// usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
+/**
+ * Description. change password
+ * Path: /reset-password
+ * Method: POST
+ * Body: {password: string, confirm_password: string}
+ * Headers: {Authorization: Bearer <otp_token>}
+ */
+usersRouter.post('/reset-password', resetPasswordOTPValidator, wrapRequestHandler(resetPasswordOTPController))
 /**
  * Description. get me
  * Path: /me

@@ -181,6 +181,20 @@ export const resetPasswordController = async (
   return res.json(result)
 }
 
+export const resetPasswordOTPController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { password } = req.body
+  const { user_id } = req.decoded_otp_token as OTPPayload
+  const result = await usersService.resetPassword({
+    user_id,
+    password
+  })
+  return res.status(200).json(result)
+}
+
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const user = await usersService.getMe(user_id)

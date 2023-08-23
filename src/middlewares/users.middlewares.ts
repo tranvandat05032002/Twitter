@@ -109,6 +109,44 @@ const forgotPasswordTokenSchema: ParamSchema = {
     }
   }
 }
+const forgotPasswordOTPSchema: ParamSchema = {
+  trim: true,
+  custom: {
+    options: async (value, { req }) => {
+      console.log('Forgot Token: ', value)
+      if (!value) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+      try {
+        const decoded_authorization = jwt.verify(value, process.env.JWT_SECRET_OTP as string, {
+          ignoreExpiration: true
+        }) as OTPPayload
+        const { user_id } = decoded_authorization
+        const user = await databaseService.users.findOne({
+          _id: new ObjectId(user_id)
+        })
+        if (!user) {
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGES.USER_NOT_FOUND,
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        }
+        ;(req as Request).decoded_otp_token = decoded_authorization
+      } catch (error) {
+        if (error instanceof JsonWebTokenError) {
+          throw new ErrorWithStatus({
+            message: normalization(error.message),
+            status: HTTP_STATUS.UNAUTHORIZED
+          })
+        }
+        throw error
+      }
+    }
+  }
+}
 const nameSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.NAME_IS_REQUIRED
@@ -421,7 +459,13 @@ export const resetPasswordValidator = validate(
     forgot_password_token: forgotPasswordTokenSchema
   })
 )
-
+export const resetPasswordOTPValidator = validate(
+  checkSchema({
+    password: passwordSchema,
+    confirm_password: confirmPasswordSchema,
+    otp_password_token: forgotPasswordOTPSchema
+  })
+)
 export const verifiedUserValidator = (req: Request, res: Response, next: NextFunction) => {
   const { verify } = req.decoded_authorization as TokenPayload
   if (verify !== UserVerifyStatus.Verified) {
