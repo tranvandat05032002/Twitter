@@ -429,7 +429,9 @@ export const verifyOTPValidator = validate(
               })
             }
             try {
-              const decoded_authorization = jwt.verify(otp_token, process.env.JWT_SECRET_OTP as string) as OTPPayload
+              const decoded_authorization = jwt.verify(otp_token, process.env.JWT_SECRET_OTP as string, {
+                ignoreExpiration: true
+              }) as OTPPayload
               ;(req as Request).decoded_otp_token = decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({

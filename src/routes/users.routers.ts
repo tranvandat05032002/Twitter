@@ -10,6 +10,7 @@ import {
   logoutController,
   refreshTokenController,
   registerController,
+  resendPasswordOTPController,
   resendVerifyEmailController,
   resetPasswordController,
   resetPasswordOTPController,
@@ -138,6 +139,15 @@ usersRouter.post(
  * Headers: {Authorization: Bearer <otp_token>}
  */
 usersRouter.post('/reset-password', resetPasswordOTPValidator, wrapRequestHandler(resetPasswordOTPController))
+
+/**
+ * Description: resend OTP
+ * Path: "/resend-otp"
+ * Method: POST
+ * body:{}
+ * headers: {Authorization: Bearer <jwtToken>}
+ */
+usersRouter.post('/resend-otp', verifyOTPValidator, wrapRequestHandler(resendPasswordOTPController))
 /**
  * Description. get me
  * Path: /me

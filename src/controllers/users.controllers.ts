@@ -194,6 +194,16 @@ export const resetPasswordOTPController = async (
   })
   return res.status(200).json(result)
 }
+export const resendPasswordOTPController = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_id } = req.decoded_otp_token as OTPPayload
+  const user = await databaseService.users.findOne({
+    _id: new ObjectId(user_id)
+  })
+  const email = user?.email as string
+  const result = await usersService.forgotPasswordOTP({ user_id, email, verify: UserVerifyStatus.Verified })
+
+  return res.json(result)
+}
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
