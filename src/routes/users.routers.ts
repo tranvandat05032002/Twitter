@@ -6,6 +6,7 @@ import {
   forgotPasswordController,
   forgotPasswordOTPController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -178,4 +179,10 @@ usersRouter.patch(
   ]),
   wrapRequestHandler(updateMeController)
 )
+/**
+ * Description. Get user profle
+ * Path: /:username
+ * Method: GET
+ */
+usersRouter.get('/:username', wrapRequestHandler(getProfileController))
 export default usersRouter
