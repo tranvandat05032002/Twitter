@@ -59,3 +59,7 @@ export interface OTPPayload extends JwtPayload {
   otp: string
   exp: number
 }
+
+export interface FollowReqBody {
+  followed_user_id: string
+}
