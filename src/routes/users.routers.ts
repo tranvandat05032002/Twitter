@@ -2,6 +2,7 @@ import { UpdateMeReqBody } from '~/models/request/User.requests'
 import wrapRequestHandler from '~/utils/handlers'
 import { Router } from 'express'
 import {
+  changePasswordController,
   findEmailController,
   followController,
   forgotPasswordController,
@@ -24,6 +25,7 @@ import {
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   findEmailValidator,
   followValidator,
   forgotPasswordValidator,
@@ -217,5 +219,20 @@ usersRouter.delete(
   verifiedUserValidator,
   unfollowValidator,
   wrapRequestHandler(unfollowController)
+)
+
+/**
+ * Description. change password
+ * Path: /change-password
+ * Method: PUT
+ * Body: { old_password: string, passsword: string, confirm_password: string}
+ * Header: { Authorization: Bearer <access_token> }
+ */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapRequestHandler(changePasswordController)
 )
 export default usersRouter
