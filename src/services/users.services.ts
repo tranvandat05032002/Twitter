@@ -16,6 +16,7 @@ import jwt from 'jsonwebtoken'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import Follower from '~/models/schemas/Follow.schema'
+import axios from 'axios'
 dotenv.config()
 
 interface INodeMailer {
@@ -148,7 +149,8 @@ class UsersService {
     )
     return {
       access_token,
-      refresh_token
+      refresh_token,
+      email_verify_token
     }
   }
   public async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -162,6 +164,96 @@ class UsersService {
     return {
       access_token,
       refresh_token
+    }
+  }
+  private async getGoogleAuthToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_AUTH_CLIENT_ID as string,
+      client_secret: process.env.GOOGLE_AUTH_CLIENT_SECRET_KEY,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+    const { data } = await axios.post(process.env.GOOGLE_TOKEN_URI as string, body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    return data as {
+      access_token: string
+      id_token: string
+    }
+  }
+  public async getGoogleUserInfo(access_token: string, id_token: string) {
+    const { data } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    })
+    return data as {
+      id: string
+      email: string
+      name: string
+      verified_email: boolean
+      picture: string
+      given_name: string
+      family_name: string
+      local: string
+    }
+  }
+  public async oAuth(code: string) {
+    try {
+      const { access_token, id_token } = await this.getGoogleAuthToken(code)
+      const userInfo = await this.getGoogleUserInfo(access_token, id_token)
+      if (!userInfo.verified_email) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.GMAIL_NOT_VERIFIED,
+          status: HTTP_STATUS.BAD_REQUEST
+        })
+      }
+      const user = await databaseService.users.findOne({
+        email: userInfo.email
+      })
+      if (user) {
+        const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
+          user_id: user._id.toString(),
+          verify: user.verify
+        })
+        await databaseService.RefreshTokens.insertOne(
+          new RefreshToken({
+            user_id: user._id,
+            token: refresh_token
+          })
+        )
+        return {
+          access_token,
+          refresh_token,
+          newUser: 0,
+          email_verify_token: '',
+          verify: user.verify
+        }
+      } else {
+        const passwordOAuth = (Math.random() + 1).toString(36).substring(3, 15) + 'D'
+        const data = await this.register({
+          email: userInfo.email,
+          name: userInfo.name,
+          date_of_birth: new Date().toISOString(),
+          password: passwordOAuth,
+          confirm_password: passwordOAuth
+        })
+        return {
+          ...data,
+          newUser: 1,
+          email_verify_token: data.email_verify_token,
+          verify: UserVerifyStatus.Unverified
+        }
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
   public async checkExistEmail(email: string) {

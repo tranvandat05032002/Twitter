@@ -268,3 +268,11 @@ export const changePasswordController = async (
   const result = await usersService.changePassword(user_id, password)
   return res.json(result)
 }
+export const oAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  const { code } = req.query
+  const result = await usersService.oAuth(code as string)
+  if (!result) return
+  const urlRedirectVerify = `${process.env.CLIENT_REDIRECT_VERIFY_CALLBACK}?token=${result.email_verify_token}&access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirectHome = `${process.env.CLIENT_REDIRECT_HOME_CALLBACK}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  return res.redirect(result.verify === 0 ? urlRedirectVerify : urlRedirectHome)
+}

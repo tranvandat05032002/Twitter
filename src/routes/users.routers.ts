@@ -11,6 +11,7 @@ import {
   getProfileController,
   loginController,
   logoutController,
+  oAuthController,
   refreshTokenController,
   registerController,
   resendPasswordOTPController,
@@ -52,6 +53,13 @@ const usersRouter = Router()
  * Body: { email: string, password: string }
  */
 usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
+/**
+ * Description. OAuth with google
+ * Path: /
+ * Method: GET
+ * Query: {code: string}
+ */
+usersRouter.get('/oauth/google', oAuthController)
 /**
  * Description. Register a new user
  * Path: /register
@@ -225,7 +233,7 @@ usersRouter.delete(
  * Description. change password
  * Path: /change-password
  * Method: PUT
- * Body: { old_password: string, passsword: string, confirm_password: string}
+ * Body: { old_password: string, password: string, confirm_password: string}
  * Header: { Authorization: Bearer <access_token> }
  */
 usersRouter.put(
