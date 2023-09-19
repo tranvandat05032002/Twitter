@@ -2,8 +2,9 @@ import { Request } from 'express'
 import { File } from 'formidable'
 import fs from 'fs'
 import path, { resolve } from 'path'
+import { UPLOAD_TEMP_DIR } from '~/constants/dir'
 export const initFolder = () => {
-  const uploadFolderFile = path.resolve('uploads')
+  const uploadFolderFile = UPLOAD_TEMP_DIR
   if (!fs.existsSync(uploadFolderFile)) {
     fs.mkdirSync(uploadFolderFile, {
       recursive: true // create folder nested
@@ -14,7 +15,7 @@ export const initFolder = () => {
 export const handleUploadSingleImage = async (req: Request) => {
   const formidable = (await import('formidable')).default
   const form = formidable({
-    uploadDir: path.resolve('uploads'),
+    uploadDir: UPLOAD_TEMP_DIR,
     keepExtensions: true,
     maxFiles: 1,
     maxFileSize: 12 * 1024 * 1024, // 12MB
@@ -38,4 +39,10 @@ export const handleUploadSingleImage = async (req: Request) => {
       resolve((files.image as File[])[0])
     })
   })
+}
+
+export const getNameFromFullName = (fullName: string) => {
+  const name = fullName.split('.')
+  name.pop()
+  return name.join('')
 }
