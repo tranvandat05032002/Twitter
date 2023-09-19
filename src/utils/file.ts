@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import { File } from 'formidable'
 import fs from 'fs'
 import path, { resolve } from 'path'
 export const initFolder = () => {
@@ -16,16 +17,16 @@ export const handleUploadSingleImage = async (req: Request) => {
     uploadDir: path.resolve('uploads'),
     keepExtensions: true,
     maxFiles: 1,
-    maxFileSize: 500 * 1024, // 500KB
+    maxFileSize: 12 * 1024 * 1024, // 12MB
     filter: function ({ name, originalFilename, mimetype }) {
       const valid = name === 'image' && Boolean(mimetype?.includes('image/'))
       if (!valid) {
         form.emit('error' as any, new Error('File type is not value') as any)
       }
-      return true
+      return valid
     }
   })
-  return new Promise((resolve, reject) => {
+  return new Promise<File>((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
         return reject(err)
@@ -34,7 +35,7 @@ export const handleUploadSingleImage = async (req: Request) => {
       if (!Boolean(files.image)) {
         return reject(new Error('File is empty'))
       }
-      resolve(files)
+      resolve((files.image as File[])[0])
     })
   })
 }

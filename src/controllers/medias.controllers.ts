@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import path from 'path'
-import { handleUploadSingleImage } from '~/utils/file'
+import mediaService from '~/services/medias.services'
 
 export const uploadSingleImageController = async (req: Request, res: Response, next: NextFunction) => {
-  const data = await handleUploadSingleImage(req)
+  const result = await mediaService.handleUploadSingleImage(req)
   return res.status(200).json({
-    result: data
+    result
   })
 }
