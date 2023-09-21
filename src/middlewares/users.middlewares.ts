@@ -286,14 +286,17 @@ export const accessTokenValidator = validate(
                 token: access_token,
                 secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
               })
-              ;(req as Request).decoded_authorization = decoded_authorization
+              if (req) {
+                ;(req as Request).decoded_authorization = decoded_authorization
+                return true
+              }
+              return decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({
                 message: normalization((error as JsonWebTokenError).message),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
-            return true
           }
         }
       }

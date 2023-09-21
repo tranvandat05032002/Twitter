@@ -234,7 +234,7 @@ export const updateMeController = async (
 export const getProfileController = async (req: Request<GetProfileParams>, res: Response, next: NextFunction) => {
   const { username } = req.params
   const user = await usersService.getProfile(username)
-  res.status(200).json({
+  return res.status(200).json({
     message: USERS_MESSAGES.GET_ME_SUCCESS,
     result: user
   })
@@ -248,14 +248,14 @@ export const followController = async (
   const { user_id } = req.decoded_authorization as TokenPayload
   const { followed_user_id } = req.body
   const result = await usersService.follows(user_id, followed_user_id)
-  res.status(200).json(result)
+  return res.status(200).json(result)
 }
 
 export const unfollowController = async (req: Request<UnfollowReqParams>, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const { user_id: followed_user_id } = req.params
   const result = await usersService.unfollows(user_id, followed_user_id)
-  res.json(result)
+  return res.json(result)
 }
 
 export const changePasswordController = async (
