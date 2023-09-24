@@ -26,6 +26,12 @@ export const uploadVideoController = async (req: Request, res: Response, next: N
     result: url
   })
 }
+export const uploadVideoHLSController = async (req: Request, res: Response, next: NextFunction) => {
+  const url = await mediaService.uploadVideoHLS(req)
+  return res.status(200).json({
+    result: url
+  })
+}
 
 export const ServeVideoStreamingController = (req: Request, res: Response, next: NextFunction) => {
   const range = req.headers.range
