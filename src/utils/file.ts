@@ -49,7 +49,7 @@ export const handleUploadVideo = async (req: Request) => {
     maxFiles: 1,
     maxFileSize: 50 * 1024 * 1024, // 50MB
     filter: function ({ name, originalFilename, mimetype }) {
-      const valid = name === 'video' && Boolean(mimetype?.includes('mp4'))
+      const valid = name === 'video' && Boolean(mimetype?.includes('mp4') || mimetype?.includes('quicktime'))
       if (!valid) {
         form.emit('error' as any, new Error('File type is not value') as any)
       }
@@ -82,7 +82,7 @@ export const getNameFromFullName = (fullName: string) => {
   return name.join('')
 }
 
-export const getExtensionName = (fullname: string) => {
-  const arrName = fullname.split('.')
+export const getExtensionName = (fullName: string) => {
+  const arrName = fullName.split('.')
   return arrName[arrName.length - 1]
 }

@@ -6,7 +6,7 @@ import { defaultHandleError } from './middlewares/errors.middlewares'
 import cors from 'cors'
 import mediasRouter from './routes/medias.routers'
 import { initFolder } from './utils/file'
-import { UPLOAD_IMAGE_DIR } from './constants/dir'
+import { UPLOAD_VIDEO_DIR } from './constants/dir'
 import staticRouter from './routes/statics.routers'
 dotenv.config()
 const app = express()
@@ -27,7 +27,7 @@ app.use(express.json())
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
-// app.use('/static', express.static(UPLOAD_IMAGE_DIR))
+app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 app.use(defaultHandleError)
 
 app.listen(PORT, () => {
