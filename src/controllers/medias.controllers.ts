@@ -5,6 +5,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import mediaService from '~/services/medias.services'
 import fs from 'fs'
 import mime from 'mime'
+import { USERS_MESSAGES } from '~/constants/message'
 
 export const uploadImageController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImage(req)
@@ -32,7 +33,14 @@ export const uploadVideoHLSController = async (req: Request, res: Response, next
     result: url
   })
 }
-
+export const videoStatusController = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params
+  const result = await mediaService.getVideoStatus(id as string)
+  return res.status(200).json({
+    message: USERS_MESSAGES.GET_VIDEO_STATUS_SUCCESS,
+    result: result
+  })
+}
 export const ServeVideoStreamingController = (req: Request, res: Response, next: NextFunction) => {
   const range = req.headers.range
   console.log(range)

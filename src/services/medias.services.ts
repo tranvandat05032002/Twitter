@@ -145,6 +145,12 @@ class MediaService {
     )
     return result
   }
+  public async getVideoStatus(id: string) {
+    const data = await databaseService.videoStatus.findOne({
+      name: id
+    })
+    return data
+  }
 }
 const mediaService = new MediaService()
 export default mediaService
