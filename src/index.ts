@@ -18,7 +18,9 @@ const corsOptions = {
   credentials: true
 }
 app.use(cors(corsOptions))
-databaseService.connect()
+databaseService.connect().then(() => {
+  databaseService.indexUser()
+})
 const PORT = process.env.PORT
 const DOMAIN = process.env.DOMAIN
 

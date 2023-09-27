@@ -21,6 +21,18 @@ class DatabaseService {
       console.log(error)
     }
   }
+  indexUser() {
+    try {
+      this.users.createIndex({
+        email: 1,
+        password: 1
+      })
+      this.users.createIndex({ email: 1 }, { unique: true })
+      this.users.createIndex({ username: 1 }, { unique: true })
+    } catch (error) {
+      console.log(error)
+    }
+  }
   get users(): Collection<User> {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }
@@ -30,7 +42,7 @@ class DatabaseService {
   get followers(): Collection<Follower> {
     return this.db.collection(process.env.DB_FOLLOW_COLLECTION as string)
   }
-  get videoStatus(): Collection <VideoStatus> {
+  get videoStatus(): Collection<VideoStatus> {
     return this.db.collection(process.env.DB_VIDEO_STATUS_COLLECTION as string)
   }
 }
