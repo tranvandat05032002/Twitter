@@ -20,6 +20,9 @@ const corsOptions = {
 app.use(cors(corsOptions))
 databaseService.connect().then(() => {
   databaseService.indexUser()
+  databaseService.indexRefreshToken()
+  databaseService.indexFollower()
+  databaseService.indexVideoStatus()
 })
 const PORT = process.env.PORT
 const DOMAIN = process.env.DOMAIN
