@@ -270,7 +270,6 @@ export const accessTokenValidator = validate(
   checkSchema(
     {
       Authorization: {
-        trim: true,
         custom: {
           options: async (value: string, { req }) => {
             const access_token = (value || '').split(' ')[1]

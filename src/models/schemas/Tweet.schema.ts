@@ -8,9 +8,9 @@ interface ITweet {
   type: TweetType
   audience: TweetAudience
   content: string
-  parent_id: null | ObjectId //  chỉ null khi tweet gốc
+  parent_id: null | string
   hashtags: ObjectId[]
-  mentions: ObjectId[]
+  mentions: string[]
   medias: Media[]
   guest_views: number
   user_views: number
@@ -24,9 +24,9 @@ class Tweet {
   type: TweetType
   audience: TweetAudience
   content: string
-  parent_id: null | ObjectId //  chỉ null khi tweet gốc
+  parent_id: null | string
   hashtags: ObjectId[]
-  mentions: ObjectId[]
+  mentions: string[]
   medias: Media[]
   guest_views: number
   user_views: number
