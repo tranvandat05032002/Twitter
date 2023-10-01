@@ -28,10 +28,10 @@ class Tweet {
   hashtags: ObjectId[]
   mentions: string[]
   medias: Media[]
-  guest_views?: number
-  user_views?: number
-  created_at?: Date
-  updated_at?: Date
+  guest_views: number
+  user_views: number
+  created_at: Date
+  updated_at: Date
 
   constructor(tweet: ITweet) {
     const date = new Date()
