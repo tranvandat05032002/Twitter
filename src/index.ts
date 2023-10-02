@@ -1,14 +1,14 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import usersRouter from './routes/users.routers'
+import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { defaultHandleError } from './middlewares/errors.middlewares'
 import cors from 'cors'
-import mediasRouter from './routes/medias.routers'
+import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
 import { UPLOAD_VIDEO_DIR } from './constants/dir'
-import staticRouter from './routes/statics.routers'
-import { tweetRouter } from './routes/tweets.routers'
+import staticRouter from './routes/statics.routes'
+import { tweetRouter } from './routes/tweets.routes'
 dotenv.config()
 const app = express()
 // app.use(cors())
