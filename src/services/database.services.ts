@@ -6,6 +6,7 @@ import Follower from '~/models/schemas/Follow.schema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
 import Hashtag from '~/models/schemas/Hashtag.schema'
+import Bookmark from '~/models/schemas/Bookmark.schema'
 dotenv.config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
@@ -84,6 +85,9 @@ class DatabaseService {
   }
   get hashtags(): Collection<Hashtag> {
     return this.db.collection(process.env.DB_HASHTAG_COLLECTION as string)
+  }
+  get bookmarks(): Collection<Bookmark> {
+    return this.db.collection(process.env.DB_BOOKMARK_COLLECTION as string)
   }
 }
 const databaseService = new DatabaseService()
