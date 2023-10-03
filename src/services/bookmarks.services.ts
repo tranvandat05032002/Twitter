@@ -24,12 +24,16 @@ class BookmarkService {
     return result.value as WithId<Bookmark>
   }
   public async removeTweetBookmark(user_id: string, tweet_id: string) {
-    const result = await databaseService.bookmarks.findOneAndDelete({
+    await databaseService.bookmarks.findOneAndDelete({
       user_id: new ObjectId(user_id),
       tweet_id: new ObjectId(tweet_id)
     })
-
-    return result
+  }
+  public async removeBookmarkByBookmarkId(user_id: string, bookmark_id: string) {
+    await databaseService.bookmarks.findOneAndDelete({
+      _id: new ObjectId(bookmark_id),
+      user_id: new ObjectId(user_id)
+    })
   }
 }
 const bookmarkService = new BookmarkService()
