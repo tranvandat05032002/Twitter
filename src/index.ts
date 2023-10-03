@@ -10,6 +10,7 @@ import { UPLOAD_VIDEO_DIR } from './constants/dir'
 import staticRouter from './routes/statics.routes'
 import { tweetRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
+import likesRouter from './routes/likes.routes'
 dotenv.config()
 const app = express()
 // app.use(cors())
@@ -36,6 +37,7 @@ app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
 app.use('/tweet', tweetRouter)
 app.use('/bookmark', bookmarksRouter)
+app.use('/like', likesRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 app.use(defaultHandleError)
 
