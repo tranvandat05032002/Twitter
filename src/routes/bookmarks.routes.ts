@@ -4,6 +4,7 @@ import {
   unBookmarkByBookmarkIdController,
   unBookmarkTweetController
 } from '~/controllers/bookmarks.controller'
+import { tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 import wrapRequestHandler from '~/utils/handlers'
 
@@ -19,6 +20,7 @@ bookmarksRouter.post(
   '/',
   accessTokenValidator,
   verifiedUserValidator,
+  tweetIdValidator,
   wrapRequestHandler(createBookmarkTweetController)
 )
 /**
@@ -27,7 +29,13 @@ bookmarksRouter.post(
  * Method: DELETE
  * Header: { Authorization: Bearer <access_token> }
  */
-bookmarksRouter.delete('/tweet/:tweet_id', accessTokenValidator, verifiedUserValidator, unBookmarkTweetController)
+bookmarksRouter.delete(
+  '/tweet/:tweet_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  tweetIdValidator,
+  unBookmarkTweetController
+)
 /**
  * Description: remove a bookmark form bookmark_id
  * Path: /:tweet_id

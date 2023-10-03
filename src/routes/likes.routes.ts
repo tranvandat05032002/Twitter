@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { UnlikeTweetController, createTweetLikeController } from '~/controllers/likes.controller'
+import { tweetIdValidator } from '~/middlewares/tweets.middlewares'
 import { accessTokenValidator, verifiedUserValidator } from '~/middlewares/users.middlewares'
 const likesRouter = Router()
 /**
@@ -9,7 +10,7 @@ const likesRouter = Router()
  * Body: {tweet_id: string}
  * Header: { Authorization: Bearer <access_token> }
  */
-likesRouter.post('/', accessTokenValidator, verifiedUserValidator, createTweetLikeController)
+likesRouter.post('/', accessTokenValidator, verifiedUserValidator, tweetIdValidator, createTweetLikeController)
 /**
  * Description: unlike tweet
  * Path: /like/:like_id
@@ -17,5 +18,6 @@ likesRouter.post('/', accessTokenValidator, verifiedUserValidator, createTweetLi
  * Header: { Authorization: Bearer <access_token> }
  */
 likesRouter.delete('/:like_id', accessTokenValidator, verifiedUserValidator, UnlikeTweetController)
+// future: create router unlike by tweet_id
 
 export default likesRouter
