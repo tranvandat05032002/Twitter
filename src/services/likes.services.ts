@@ -23,18 +23,12 @@ class LikeService {
 
     return result.value as WithId<Like>
   }
-  // public async removeTweetBookmark(user_id: string, tweet_id: string) {
-  //   await databaseService.bookmarks.findOneAndDelete({
-  //     user_id: new ObjectId(user_id),
-  //     tweet_id: new ObjectId(tweet_id)
-  //   })
-  // }
-  // public async removeBookmarkByBookmarkId(user_id: string, bookmark_id: string) {
-  //   await databaseService.bookmarks.findOneAndDelete({
-  //     _id: new ObjectId(bookmark_id),
-  //     user_id: new ObjectId(user_id)
-  //   })
-  // }
+  public async unlikeTweet(user_id: string, like_id: string) {
+    await databaseService.likes.findOneAndDelete({
+      _id: new ObjectId(like_id),
+      user_id: new ObjectId(user_id)
+    })
+  }
 }
 
 const likeService = new LikeService()
