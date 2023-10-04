@@ -12,6 +12,7 @@ export interface IUser {
   email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
+  twitter_circle?: ObjectId[]
 
   bio?: string
   location?: string
@@ -32,6 +33,7 @@ export default class User {
   email_verify_token: string
   forgot_password_token: string
   verify: UserVerifyStatus
+  twitter_circle: ObjectId[] // list id of account, this user add to the circle
 
   bio: string
   location: string
@@ -52,6 +54,7 @@ export default class User {
     this.email_verify_token = user.email_verify_token || ''
     this.forgot_password_token = user.forgot_password_token || ''
     this.verify = user.verify || UserVerifyStatus.Unverified
+    this.twitter_circle = user.twitter_circle || []
     this.bio = user.bio || ''
     this.location = user.location || ''
     this.website = user.website || ''

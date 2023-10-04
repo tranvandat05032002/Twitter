@@ -34,7 +34,7 @@ bookmarksRouter.delete(
   accessTokenValidator,
   verifiedUserValidator,
   tweetIdValidator,
-  unBookmarkTweetController
+  wrapRequestHandler(unBookmarkTweetController)
 )
 /**
  * Description: remove a bookmark form bookmark_id
@@ -42,5 +42,10 @@ bookmarksRouter.delete(
  * Method: DELETE
  * Header: { Authorization: Bearer <access_token> }
  */
-bookmarksRouter.delete('/:bookmark_id', accessTokenValidator, verifiedUserValidator, unBookmarkByBookmarkIdController)
+bookmarksRouter.delete(
+  '/:bookmark_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(unBookmarkByBookmarkIdController)
+)
 export default bookmarksRouter
