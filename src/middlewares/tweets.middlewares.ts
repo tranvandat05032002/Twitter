@@ -1,12 +1,17 @@
+import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { isEmpty } from 'lodash'
-import { ObjectId } from 'mongodb'
-import { MediaType, TweetAudience, TweetType } from '~/constants/enum'
+import { ObjectId, WithId } from 'mongodb'
+import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from '~/constants/enum'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { TWEETS_MESSAGES } from '~/constants/message'
+import { TWEETS_MESSAGES, USERS_MESSAGES } from '~/constants/message'
 import { ErrorWithStatus } from '~/models/Errors'
 import { Media } from '~/models/Other'
+import { TokenPayload } from '~/models/request/User.requests'
+import Tweet from '~/models/schemas/Tweet.schema'
+import User from '~/models/schemas/User.chema'
 import databaseService from '~/services/database.services'
+import wrapRequestHandler from '~/utils/handlers'
 import { numberEnumToArray } from '~/utils/other'
 import { validate } from '~/utils/validation'
 
@@ -131,6 +136,7 @@ export const tweetIdValidator = validate(
                 message: TWEETS_MESSAGES.TWEET_NOT_FOUND
               })
             }
+            req.tweet = checkTweetId as Tweet
             return true
           }
         }
@@ -139,3 +145,37 @@ export const tweetIdValidator = validate(
     ['body', 'params']
   )
 )
+
+export const audienceValidator = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const tweet = req.tweet as Tweet
+  // check the mode of the tweet
+  if (tweet.audience === TweetAudience.TwitterCircle) {
+    // check account verified
+    if (!req.decoded_authorization) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.UNAUTHORIZED,
+        message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED
+      })
+    }
+  }
+  // check account banded?
+  const author = await databaseService.users.findOne({
+    _id: new ObjectId(tweet.user_id)
+  })
+  if (!author || author?.verify === UserVerifyStatus.Banned) {
+    throw new ErrorWithStatus({
+      status: HTTP_STATUS.FORBIDDEN,
+      message: TWEETS_MESSAGES.TWEET_IS_NOT_PUBLIC
+    })
+  }
+  // Check this account is in the list tweet_circle of tweet
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const isInTweetCircle = author.twitter_circle?.some((user_circle_id) => user_circle_id.equals(user_id))
+  if (!author._id.equals(user_id) && !isInTweetCircle) {
+    throw new ErrorWithStatus({
+      status: HTTP_STATUS.FORBIDDEN,
+      message: TWEETS_MESSAGES.TWEET_IS_NOT_PUBLIC
+    })
+  }
+  next()
+})
