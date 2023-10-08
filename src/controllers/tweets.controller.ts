@@ -13,9 +13,8 @@ export const createTweetController = async (req: Request<ParamsDictionary, any, 
   })
 }
 export const getTweetController = async (req: Request, res: Response) => {
-  // const { user_id } = req.decoded_authorization as TokenPayload
   res.json({
     message: 'Get tweet successfully!',
-    result: 'Ok'
+    result: req.tweet
   })
 }
