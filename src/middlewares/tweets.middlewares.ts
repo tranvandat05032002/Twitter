@@ -196,9 +196,6 @@ export const tweetIdValidator = validate(
                     likes: {
                       $size: '$likes'
                     },
-                    views: {
-                      $add: ['$guest_views', '$user_views']
-                    },
                     retweet_count: {
                       $size: {
                         $filter: {
