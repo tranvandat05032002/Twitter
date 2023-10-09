@@ -32,7 +32,8 @@ export const getTweetChildren = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit as string)
   const page = Number(req.query.page as string)
   const tweet_type = Number(req.query.tweet_type as string) as TweetType
-  const { tweet, total } = await tweetService.getTweetChildren({ tweet_id, limit, page, tweet_type })
+  const user_id = req.decoded_authorization?.user_id
+  const { tweet, total } = await tweetService.getTweetChildren({ tweet_id, limit, page, tweet_type, user_id })
   res.json({
     message: 'Get tweet children successfully!',
     result: {

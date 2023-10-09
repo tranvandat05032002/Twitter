@@ -45,7 +45,7 @@ class TweetService {
     })
     return tweet
   }
-  public async increaseView(tweet_id: string, user_id: string) {
+  public async increaseView(tweet_id: string, user_id?: string) {
     const inc = user_id ? { user_views: 1 } : { guest_views: 1 }
     const result = await databaseService.tweets.findOneAndUpdate(
       {
@@ -77,12 +77,14 @@ class TweetService {
     tweet_id,
     limit,
     page,
-    tweet_type
+    tweet_type,
+    user_id
   }: {
     tweet_id: string
     limit: number
     page: number
     tweet_type: TweetType
+    user_id?: string
   }) {
     const tweet = await databaseService.tweets
       .aggregate<Tweet>([
@@ -154,9 +156,6 @@ class TweetService {
             likes: {
               $size: '$likes'
             },
-            views: {
-              $add: ['$guest_views', '$user_views']
-            },
             retweet_count: {
               $size: {
                 $filter: {
@@ -205,9 +204,37 @@ class TweetService {
         }
       ])
       .toArray()
-    const total = await databaseService.tweets.countDocuments({
-      parent_id: new ObjectId(tweet_id),
-      type: tweet_type
+    const ids = tweet.map((tweet) => tweet._id as ObjectId)
+    const inc = user_id ? { user_views: 1 } : { guest_views: 1 }
+    const date = new Date()
+
+    const [total] = await Promise.all([
+      databaseService.tweets.countDocuments({
+        parent_id: new ObjectId(tweet_id),
+        type: tweet_type
+      }),
+      databaseService.tweets.updateMany(
+        {
+          _id: {
+            $in: ids
+          }
+        },
+        {
+          $inc: inc,
+          $set: {
+            updated_at: date
+          }
+        }
+      )
+    ])
+    //This code update view on client
+    tweet.forEach((tweet) => {
+      tweet.updated_at = date
+      if (tweet.user_id) {
+        tweet.user_views += 1
+      } else {
+        tweet.guest_views += 1
+      }
     })
     return {
       tweet,
