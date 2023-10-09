@@ -1,5 +1,5 @@
 import Express from 'express'
-export default function wrapRequestHandler<P>(Func: Express.RequestHandler<P>) {
+export default function wrapRequestHandler<P>(Func: Express.RequestHandler<P, any, any, any>) {
   return async (req: Express.Request<P>, res: Express.Response, next: Express.NextFunction) => {
     try {
       await Func(req, res, next)
