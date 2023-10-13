@@ -11,6 +11,7 @@ import staticRouter from './routes/statics.routes'
 import { tweetRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
+// import '~/utils/fake'
 dotenv.config()
 const app = express()
 // app.use(cors())
