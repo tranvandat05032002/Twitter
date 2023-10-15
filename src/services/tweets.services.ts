@@ -241,6 +241,25 @@ class TweetService {
       total
     }
   }
+  public async getNewFeedTweet({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
+    const user_id_obj = new ObjectId(user_id)
+    const followed_user_ids = await databaseService.followers
+      .find(
+        {
+          user_id: user_id_obj
+        },
+        {
+          projection: {
+            followed_user_id: 1,
+            _id: 0
+          }
+        }
+      )
+      .toArray()
+    const ids = followed_user_ids.map((item) => item.followed_user_id)
+    ids.push(user_id_obj)
+    return ids
+  }
 }
 const tweetService = new TweetService()
 export default tweetService

@@ -295,30 +295,38 @@ export const getTweetChildrenValidator = validate(
         options: [tweetTypes],
         errorMessage: TWEETS_MESSAGES.INVALID_TYPE
       }
-    },
-    limit: {
-      isNumeric: true,
-      custom: {
-        options: async (value, { req }) => {
-          const limit = Number(value)
-          if (limit < 1 || limit > 100) {
-            throw new Error('Limit >= 1 and limit <= 100')
-          }
-          return true
-        }
-      }
-    },
-    page: {
-      isNumeric: true,
-      custom: {
-        options: async (value, { req }) => {
-          const page = Number(value)
-          if (page < 1) {
-            throw new Error('page >= 1')
-          }
-          return true
-        }
-      }
     }
   })
+)
+
+export const paginationValidator = validate(
+  checkSchema(
+    {
+      limit: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const limit = Number(value)
+            if (limit < 1 || limit > 100) {
+              throw new Error('Limit >= 1 and limit <= 100')
+            }
+            return true
+          }
+        }
+      },
+      page: {
+        isNumeric: true,
+        custom: {
+          options: async (value, { req }) => {
+            const page = Number(value)
+            if (page < 1) {
+              throw new Error('page >= 1')
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
 )
