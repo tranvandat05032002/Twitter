@@ -11,6 +11,7 @@ import staticRouter from './routes/statics.routes'
 import { tweetRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
+import { searchRouter } from './routes/searchs.routes'
 // import '~/utils/fake'
 dotenv.config()
 const app = express()
@@ -37,6 +38,7 @@ app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)
 app.use('/tweet', tweetRouter)
+app.use('/search', searchRouter)
 app.use('/bookmark', bookmarksRouter)
 app.use('/like', likesRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
