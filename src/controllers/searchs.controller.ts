@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { TWEETS_MESSAGES } from '~/constants/message'
 import { SearchQuery } from '~/models/request/Search.request'
-import { searchService } from '~/services/searchs.services'
+import { searchService } from '~/services/searches.services'
 export const searchController = async (
   req: Request<ParamsDictionary, any, any, SearchQuery>,
   res: Response,
