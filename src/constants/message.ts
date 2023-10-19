@@ -88,7 +88,8 @@ export const TWEETS_MESSAGES = {
   TWEET_CREATE_SUCCESS: 'Create tweet successfully!',
   TWEET_GET_SUCCESS: 'Get tweet successfully!',
   TWEET_CHILDREN_GET_SUCCESS: 'Get tweet children successfully!',
-  TWEET_NEW_FEED_GET_SUCCESS: 'Get New Feeds Successfully'
+  TWEET_NEW_FEED_GET_SUCCESS: 'Get New Feeds Successfully',
+  TWEET_SEARCH_SUCCESS: 'Search tweet Successfully'
 } as const
 
 export const BOOKMARK_MESSAGES = {

@@ -5,10 +5,4 @@ import { accessTokenValidator, verifiedUserValidator } from '~/middlewares/users
 
 export const searchRouter = Router()
 
-searchRouter.get(
-  '/',
-  accessTokenValidator,
-  verifiedUserValidator,
-  //paginationValidator,
-  searchController
-)
+searchRouter.get('/', accessTokenValidator, verifiedUserValidator, paginationValidator, searchController)
