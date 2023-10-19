@@ -5,7 +5,7 @@ import { TweetType } from '~/constants/enum'
 class SearchService {
   async search({ limit, page, content, user_id }: { limit: number; page: number; content: string; user_id: string }) {
     const [tweets, total] = await Promise.all([
-      await databaseService.tweets
+      databaseService.tweets
         .aggregate([
           {
             $match: {
@@ -214,7 +214,6 @@ class SearchService {
         ])
         .toArray()
     ])
-
     const tweet_ids = tweets.map((tweet) => tweet._id as ObjectId)
     const date = new Date()
     await databaseService.tweets.updateMany(

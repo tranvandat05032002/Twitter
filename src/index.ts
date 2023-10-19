@@ -28,6 +28,7 @@ databaseService.connect().then(() => {
   databaseService.indexRefreshToken()
   databaseService.indexFollower()
   databaseService.indexVideoStatus()
+  databaseService.indexTweet()
 })
 const PORT = process.env.PORT
 const DOMAIN = process.env.DOMAIN
