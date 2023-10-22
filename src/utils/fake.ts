@@ -12,7 +12,7 @@ import Tweet from '~/models/schemas/Tweet.schema'
 
 const PASSWORD = '35701537Scss'
 // ID của tài khoản của mình, dùng để follow người khác
-const MYID = new ObjectId('6507cc99461d5604c6fbfe72')
+const MYID = new ObjectId('651c497cec0c5c8a03e32df2')
 
 // Số lượng user được tạo, mỗi user sẽ mặc định tweet 2 cái
 const USER_COUNT = 400
