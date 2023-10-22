@@ -15,6 +15,7 @@ export const searchController = async (
     limit,
     page,
     content: req.query.content,
+    media_type: req.query.media_type,
     user_id
   })
   res.json({
