@@ -100,3 +100,8 @@ export const LIKE_MESSAGES = {
   LIKE_SUCCESSFULLY: 'Like successfully',
   UNLIKE_SUCCESSFULLY: 'UnLike successfully'
 } as const
+
+export const SEARCH_MESSAGES = {
+  SEARCH_CONTENT_IS_STRING: 'Content must be string',
+  SEARCH_PEOPLE_FOLLOW_ON_OR_OFF: 'People follow must be on or off'
+} as const
