@@ -1,4 +1,4 @@
-export const htmlVerify = (emailVerifyToken: string) => {
+export const htmlVerify = (emailVerifyToken: string, href: string) => {
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -17,7 +17,7 @@ export const htmlVerify = (emailVerifyToken: string) => {
         <td className="bg-white p-8 rounded-lg shadow">
           <h2 className="text-2xl font-semibold mb-4">Email Verification</h2>
           <p className="text-gray-600 mb-4">Click the button below to verify your email:</p>
-          <a href="http://localhost:3000/verify?token=${emailVerifyToken}" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md block text-center text-decoration-none">
+          <a href="${href}/verify?token=${emailVerifyToken}" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md block text-center text-decoration-none">
             Verify Email
           </a>
         </td>

@@ -114,7 +114,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response, n
     })
   }
 
-  const result = await usersService.resendVerifyEmail(user_id)
+  const result = await usersService.resendVerifyEmail(user_id, user.email)
 
   return res.json(result)
 }

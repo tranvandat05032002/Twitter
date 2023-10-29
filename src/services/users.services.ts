@@ -17,6 +17,7 @@ import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import Follower from '~/models/schemas/Follow.schema'
 import axios from 'axios'
+import { sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
 dotenv.config()
 
 interface INodeMailer {
@@ -149,11 +150,17 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
-    await this.sendEmailToken({
-      to: payload.email,
-      subject: 'Twitter verify your email',
-      html: htmlVerify(email_verify_token)
-    })
+    // await this.sendEmailToken({
+    //   to: payload.email,
+    //   subject: 'Twitter verify your email',
+    //   html: htmlVerify(email_verify_token)
+    // })
+    // await sendVerifyEmail({
+    //   toAddress: payload.email,
+    //   subject: 'Twitter verify your email',
+    //   body: htmlVerify(email_verify_token, process.env.CLIENT_URL as string)
+    // })
+    await sendVerifyRegisterEmail(payload.email, email_verify_token)
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
@@ -357,7 +364,7 @@ class UsersService {
     }
   }
 
-  public async resendVerifyEmail(user_id: string) {
+  public async resendVerifyEmail(user_id: string, email: string) {
     const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.Unverified })
     await databaseService.users.updateOne(
       {
@@ -372,13 +379,14 @@ class UsersService {
         }
       }
     )
-    const user = await this.getMe(user_id)
-    const email = user.user?.email
-    await this.sendEmailToken({
-      to: email as string,
-      subject: 'Twitter verify your email',
-      html: htmlVerify(email_verify_token)
-    })
+    // const user = await this.getMe(user_id)
+    // const email = user.user?.email
+    // await this.sendEmailToken({
+    //   to: email as string,
+    //   subject: 'Twitter verify your email',
+    //   html: htmlVerify(email_verify_token, process.env.CLIENT_URL as string)
+    // })
+    await sendVerifyRegisterEmail(email, email_verify_token)
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
     }
