@@ -13,6 +13,7 @@ import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
 import { searchRouter } from './routes/searchs.routes'
 // import '~/utils/fake'
+import '~/utils/s3'
 dotenv.config()
 const app = express()
 // app.use(cors())
