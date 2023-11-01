@@ -11,25 +11,39 @@ const s3 = new S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string
   }
 })
-s3.listBuckets({}).then((data) => {
-  console.log(data)
-})
-const file = fs.readFileSync(path.resolve('uploads/image/image_2023-09-25_10-59-44.png'))
-const parallelUploads3 = new Upload({
-  client: s3,
-  params: { Bucket: 'twitter-s3-ap-southeast-1', Key: 'image2.jpg', Body: file, ContentType: 'image/jpeg' },
+// const file = fs.readFileSync(path.resolve('uploads/image/image_2023-09-25_10-59-44.png'))
+export const s3Upload = ({
+  fileName,
+  filePath,
+  contentType
+}: {
+  fileName: string
+  filePath: string
+  contentType: string
+}) => {
+  const parallelUploads3 = new Upload({
+    client: s3,
+    params: {
+      Bucket: 'twitter-s3-ap-southeast-1',
+      Key: fileName,
+      Body: fs.readFileSync(filePath),
+      ContentType: contentType
+    },
 
-  tags: [
-    /*...*/
-  ], // optional tags
-  queueSize: 4, // optional concurrency configuration
-  partSize: 1024 * 1024 * 5, // optional size of each part, in bytes, at least 5MB
-  leavePartsOnError: false // optional manually handle dropped parts
-})
+    tags: [
+      /*...*/
+    ], // optional tags
+    queueSize: 4, // optional concurrency configuration
+    partSize: 1024 * 1024 * 5, // optional size of each part, in bytes, at least 5MB
+    leavePartsOnError: false // optional manually handle dropped parts
+  })
 
-parallelUploads3.on('httpUploadProgress', (progress) => {
-  console.log(progress)
-})
-parallelUploads3.done().then((res) => {
-  console.log(res)
-})
+  return parallelUploads3.done()
+}
+
+// parallelUploads3.on('httpUploadProgress', (progress) => {
+//   console.log(progress)
+// })
+// parallelUploads3.done().then((res) => {
+//   console.log(res)
+// })
