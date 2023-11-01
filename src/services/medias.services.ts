@@ -13,7 +13,7 @@ import databaseService from './database.services'
 import mime from 'mime'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import { ObjectId } from 'mongodb'
-import { s3Upload } from '~/utils/s3'
+import { s3UploadFile } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 config()
 
@@ -110,8 +110,8 @@ class MediaService {
         const newFileName = `${newFile}.jpg`
         const newPath = path.resolve(UPLOAD_IMAGE_DIR, newFileName)
         await sharp(file.filepath).jpeg().toFile(newPath)
-        const s3Result = await s3Upload({
-          fileName: newFileName,
+        const s3Result = await s3UploadFile({
+          fileName: 'images/' + newFileName,
           filePath: newPath,
           contentType: mime.getType(newPath) as string
         })
@@ -130,14 +130,27 @@ class MediaService {
   }
   public async uploadVideo(req: Request) {
     const files = await handleUploadVideo(req)
-    const result: Media[] = files.map((file) => {
-      return {
-        url: isProduction
-          ? `${process.env.HOST}/static/video/${file.newFilename}`
-          : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
-        type: MediaType.Video
-      }
-    })
+    console.log(files)
+    const result: Media[] = await Promise.all(
+      files.map(async (file) => {
+        const s3Result = await s3UploadFile({
+          fileName: 'videos/' + file.newFilename,
+          filePath: file.filepath,
+          contentType: mime.getType(file.filepath) as string
+        })
+        await fsPromise.unlink(file.filepath)
+        return {
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
+          type: MediaType.Video
+        }
+        // return {
+        //   url: isProduction
+        //     ? `${process.env.HOST}/static/video/${file.newFilename}`
+        //     : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
+        //   type: MediaType.Video
+        // }
+      })
+    )
     return result
   }
   public async uploadVideoHLS(req: Request) {

@@ -12,7 +12,7 @@ const s3 = new S3({
   }
 })
 // const file = fs.readFileSync(path.resolve('uploads/image/image_2023-09-25_10-59-44.png'))
-export const s3Upload = ({
+export const s3UploadFile = ({
   fileName,
   filePath,
   contentType
