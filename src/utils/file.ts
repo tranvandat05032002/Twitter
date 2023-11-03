@@ -12,7 +12,18 @@ export const initFolder = () => {
     }
   })
 }
-
+export const getFiles = (dir: string, files: string[] = []) => {
+  const fileList = fs.readdirSync(dir) // return a array
+  for (const file of fileList) {
+    const name = `${dir}/${file}`
+    if (fs.statSync(name).isDirectory()) {
+      getFiles(name, files)
+    } else {
+      files.push(name)
+    }
+  }
+  return files
+}
 export const handleUploadImage = async (req: Request) => {
   const formidable = (await import('formidable')).default
   const form = formidable({
