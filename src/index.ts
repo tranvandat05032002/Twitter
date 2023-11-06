@@ -12,11 +12,13 @@ import { tweetRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
 import { searchRouter } from './routes/searchs.routes'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 // import '~/utils/fake'
-// import '~/utils/s3'
+
 dotenv.config()
 const app = express()
-// app.use(cors())
+const httpServer = createServer(app)
 
 // const corsOptions = {
 //   origin: 'http://localhost:3000',
@@ -46,6 +48,18 @@ app.use('/like', likesRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 app.use(defaultHandleError)
 
-app.listen(PORT, () => {
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL
+  }
+})
+
+io.on('connection', (socket) => {
+  console.log(`User ${socket.id} connected`)
+  socket.on('disconnect', () => {
+    console.log(`User ${socket.id} disconnected`)
+  })
+})
+httpServer.listen(PORT, () => {
   console.log(`Server running at http://${DOMAIN}:${PORT}/`)
 })
