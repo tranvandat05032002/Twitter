@@ -18,12 +18,12 @@ dotenv.config()
 const app = express()
 // app.use(cors())
 
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true
-}
-app.use(cors(corsOptions))
+// const corsOptions = {
+//   origin: 'http://localhost:3000',
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//   credentials: true
+// }
+app.use(cors())
 databaseService.connect().then(() => {
   databaseService.indexUser()
   databaseService.indexRefreshToken()

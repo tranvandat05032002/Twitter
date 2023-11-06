@@ -2,7 +2,8 @@ import { config } from 'dotenv'
 import { S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import fs from 'fs'
-import path from 'path'
+import { Response } from 'express'
+import HTTP_STATUS from '~/constants/httpStatus'
 config()
 const s3 = new S3({
   region: process.env.AWS_REGION as string,
@@ -40,7 +41,17 @@ export const s3UploadFile = ({
 
   return parallelUploads3.done()
 }
-
+export const sendFileFromS3 = async (res: Response, filePath: string) => {
+  try {
+    const data = await s3.getObject({
+      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Key: filePath
+    })
+    ;(data.Body as any).pipe(res)
+  } catch (error) {
+    res.status(HTTP_STATUS.NOT_FOUND).json('Not found')
+  }
+}
 // parallelUploads3.on('httpUploadProgress', (progress) => {
 //   console.log(progress)
 // })

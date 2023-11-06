@@ -14,6 +14,7 @@ import mime from 'mime'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import { s3UploadFile } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
+import { rimrafSync } from 'rimraf'
 config()
 
 class Queue {
@@ -37,8 +38,8 @@ class Queue {
   async processEncode() {
     if (this.encoding) return
     if (this.items.length > 0) {
-      const videoPath = this.items[0]
       this.encoding = true
+      const videoPath = this.items[0]
       const idName = getNameFromFullName(videoPath.split('/').pop() as string)
       await databaseService.videoStatus.updateOne(
         {
@@ -49,27 +50,25 @@ class Queue {
             status: EncodingStatus.processing
           },
           $currentDate: {
-            update_at: true
+            updated_at: true
           }
         }
       )
       try {
         await encodeHLSWithMultipleVideoStreams(videoPath)
         this.items.shift()
-        await fsPromise.unlink(videoPath)
-        // videoPath: video /Users/spiderman/Desktop/Code/Backend/Twitter/server/uploads/video/WwTN3tPVZYjj7jqotjFJJ/WwTN3tPVZYjj7jqotjFJJ.mp4
         const files = getFiles(path.resolve(UPLOAD_VIDEO_DIR, idName))
         await Promise.all(
           files.map((filePath) => {
-            const fileName = 'video-hls' + filePath.replace(path.resolve(UPLOAD_VIDEO_DIR), '')
-            s3UploadFile({
+            const fileName = 'videos-hls' + filePath.replace(path.resolve(UPLOAD_VIDEO_DIR), '')
+            return s3UploadFile({
               fileName,
               filePath,
               contentType: mime.getType(filePath) as string
             })
           })
         )
-        await Promise.all([fsPromise.unlink(videoPath), fsPromise.unlink(path.resolve(UPLOAD_VIDEO_DIR, idName))])
+        rimrafSync(path.resolve(UPLOAD_VIDEO_DIR, idName))
         await databaseService.videoStatus.updateOne(
           {
             name: idName
@@ -79,11 +78,11 @@ class Queue {
               status: EncodingStatus.success
             },
             $currentDate: {
-              update_at: true
+              updated_at: true
             }
           }
         )
-        console.log(`Encode video ${videoPath} is success`)
+        console.log(`Encode video ${videoPath} success`)
       } catch (error) {
         await databaseService.videoStatus
           .updateOne(
@@ -95,20 +94,20 @@ class Queue {
                 status: EncodingStatus.failed
               },
               $currentDate: {
-                update_at: true
+                updated_at: true
               }
             }
           )
           .catch((err) => {
-            console.log('Update video status error', err)
+            console.error('Update video status error', err)
           })
-        console.error(`Encode video ${videoPath} Error`)
-        console.log(error)
+        console.error(`Encode video ${videoPath} error`)
+        console.error(error)
       }
       this.encoding = false
       this.processEncode()
     } else {
-      console.log('Encode video is empty')
+      console.log('Encode video queue is empty')
     }
   }
 }
@@ -142,7 +141,6 @@ class MediaService {
   }
   public async uploadVideo(req: Request) {
     const files = await handleUploadVideo(req)
-    console.log(files)
     const result: Media[] = await Promise.all(
       files.map(async (file) => {
         const s3Result = await s3UploadFile({
@@ -150,7 +148,7 @@ class MediaService {
           filePath: file.filepath,
           contentType: mime.getType(file.filepath) as string
         })
-        await fsPromise.unlink(file.filepath)
+        fsPromise.unlink(file.filepath)
         return {
           url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
           type: MediaType.Video
