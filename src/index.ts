@@ -53,11 +53,32 @@ const io = new Server(httpServer, {
     origin: process.env.CLIENT_URL
   }
 })
-
+const users: {
+  [key: string]: { socket_id: string }
+} = {}
 io.on('connection', (socket) => {
   console.log(`User ${socket.id} connected`)
+  const user_id = socket.handshake.auth._id
+  if (!user_id) return
+  users[user_id] = {
+    socket_id: socket.id
+  }
+  console.log(users)
+  socket.on('private message', (data) => {
+    console.log(data)
+    const receiver_socket_id = users[data.to]?.socket_id
+    if (!receiver_socket_id) {
+      return
+    }
+    socket.to(receiver_socket_id).emit('receive private message', {
+      content: data.content,
+      from: user_id
+    })
+  })
   socket.on('disconnect', () => {
+    delete users[user_id]
     console.log(`User ${socket.id} disconnected`)
+    console.log(users)
   })
 })
 httpServer.listen(PORT, () => {
