@@ -14,6 +14,8 @@ import likesRouter from './routes/likes.routes'
 import { searchRouter } from './routes/searchs.routes'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import Conversation from './models/schemas/Conversation'
+import { ObjectId } from 'mongodb'
 // import '~/utils/fake'
 
 dotenv.config()
@@ -64,12 +66,18 @@ io.on('connection', (socket) => {
     socket_id: socket.id
   }
   console.log(users)
-  socket.on('private message', (data) => {
-    console.log(data)
+  socket.on('private message', async (data: { from: string; content: string; to: string }) => {
     const receiver_socket_id = users[data.to]?.socket_id
     if (!receiver_socket_id) {
       return
     }
+    await databaseService.conversations.insertOne(
+      new Conversation({
+        sender_id: new ObjectId(data.from),
+        content: data.content,
+        receiver_id: new ObjectId(data.to)
+      })
+    )
     socket.to(receiver_socket_id).emit('receive private message', {
       content: data.content,
       from: user_id
