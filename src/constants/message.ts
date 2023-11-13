@@ -105,3 +105,7 @@ export const SEARCH_MESSAGES = {
   SEARCH_CONTENT_IS_STRING: 'Content must be string',
   SEARCH_PEOPLE_FOLLOW_ON_OR_OFF: 'People follow must be on or off'
 } as const
+
+export const CONVERSATION_MESSAGES = {
+  GET_CONVERSATION: 'Get conversation successfully'
+} as const

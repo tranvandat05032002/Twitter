@@ -16,6 +16,7 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import Conversation from './models/schemas/Conversation'
 import { ObjectId } from 'mongodb'
+import conversationsRouter from './routes/conversations.routes'
 // import '~/utils/fake'
 
 dotenv.config()
@@ -47,6 +48,7 @@ app.use('/tweet', tweetRouter)
 app.use('/search', searchRouter)
 app.use('/bookmark', bookmarksRouter)
 app.use('/like', likesRouter)
+app.use('/conversation', conversationsRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 app.use(defaultHandleError)
 
