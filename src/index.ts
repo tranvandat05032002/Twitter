@@ -57,6 +57,13 @@ const io = new Server(httpServer, {
     origin: process.env.CLIENT_URL
   }
 })
+interface IConversation {
+  payload: {
+    sender_id: string
+    receiver_id: string
+    content: string
+  }
+}
 const users: {
   [key: string]: { socket_id: string }
 } = {}
@@ -68,21 +75,21 @@ io.on('connection', (socket) => {
     socket_id: socket.id
   }
   console.log(users)
-  socket.on('private message', async (data: { from: string; content: string; to: string }) => {
-    const receiver_socket_id = users[data.to]?.socket_id
+  socket.on('send_message', async (data: IConversation) => {
+    const { receiver_id, content, sender_id } = data.payload
+    const receiver_socket_id = users[receiver_id]?.socket_id
     if (!receiver_socket_id) {
       return
     }
-    await databaseService.conversations.insertOne(
-      new Conversation({
-        sender_id: new ObjectId(data.from),
-        content: data.content,
-        receiver_id: new ObjectId(data.to)
-      })
-    )
-    socket.to(receiver_socket_id).emit('receive private message', {
-      content: data.content,
-      from: user_id
+    const conversation = new Conversation({
+      sender_id: new ObjectId(sender_id),
+      content: content,
+      receiver_id: new ObjectId(receiver_id)
+    })
+    const result = await databaseService.conversations.insertOne(conversation)
+    conversation._id = result.insertedId
+    socket.to(receiver_socket_id).emit('receiver_message', {
+      payload: conversation
     })
   })
   socket.on('disconnect', () => {
