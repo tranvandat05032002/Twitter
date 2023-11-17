@@ -23,8 +23,8 @@ export const GetConversationsController = async (
     result: {
       limit,
       page,
-      total: Math.ceil(result.total / limit),
-      conversation: result.conversations
+      total_page: Math.ceil(result.total / limit),
+      conversations: result.conversations
     }
   })
 }

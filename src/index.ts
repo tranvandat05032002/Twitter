@@ -69,12 +69,11 @@ const users: {
 } = {}
 io.on('connection', (socket) => {
   console.log(`User ${socket.id} connected`)
-  const user_id = socket.handshake.auth._id
-  if (!user_id) return
+  const user_id = socket.handshake.auth?._id
   users[user_id] = {
     socket_id: socket.id
   }
-  console.log(users)
+  console.log('users: ', users)
   socket.on('send_message', async (data: IConversation) => {
     const { receiver_id, content, sender_id } = data.payload
     const receiver_socket_id = users[receiver_id]?.socket_id
