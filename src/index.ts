@@ -87,6 +87,7 @@ io.use(async (socket, next) => {
       })
     }
     // pass decoded_authorization to global socket
+    socket.handshake.auth.access_token = access_token
     socket.handshake.auth.decoded_authorization = decoded_authorization
     next()
   } catch (error) {
@@ -104,6 +105,20 @@ io.on('connection', (socket) => {
     socket_id: socket.id
   }
   console.log('users: ', users)
+  socket.use(async (packet, next) => {
+    const { access_token } = socket.handshake.auth
+    try {
+      await verifyAccessToken(access_token)
+      next()
+    } catch (error) {
+      next(new Error('Unauthorized'))
+    }
+  })
+  socket.on('error', (err) => {
+    if (err && err.message === 'Unauthorized') {
+      socket.disconnect()
+    }
+  })
   socket.on('send_message', async (data: IConversation) => {
     const { receiver_id, content, sender_id } = data.payload
     const receiver_socket_id = users[receiver_id]?.socket_id
