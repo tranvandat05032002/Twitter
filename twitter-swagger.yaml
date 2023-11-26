@@ -1,0 +1,1692 @@
+info:
+  title: Twitter - OpenAPI 3.0
+  description: |-
+    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
+    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
+    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+
+    _If you're looking for the Swagger 2.0/OAS 2.0 version of Petstore, then click [here](https://editor.swagger.io/?url=https://petstore.swagger.io/v2/swagger.yaml). Alternatively, you can load via the `Edit > Load Petstore OAS 2.0` menu option!_
+
+    Some useful links:
+    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
+    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  contact:
+    email: tranvandatevondev0503@gmail.com
+servers:
+  - url: http://localhost:4000
+#tags
+tags:
+  - name: users
+    description: Các API liên quan đến User
+  - name: medias
+    description: Các API liên quan đến Media
+  - name: static
+    description: Các API liên quan đến Static
+  - name: tweets
+    description: Các API liên quan đến Tweet
+  - name: bookmarks
+    description: Các API liên quan đến Bookmark
+  - name: likes
+    description: Các API liên quan đến Like
+  - name: search
+    description: Các API liên quan đến Search
+  - name: conversations
+    description: Các APi liên quan đến Conversation
+#paths
+paths:
+  # Users
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Đăng ký tài khoản
+      description: Đăng ký tài khoản để sử dụng hệ thống
+      operationId: register
+      requestBody:
+        description: Thông tin đăng ký
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBodyRequest'
+        required: true
+      responses:
+        '200':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Register success
+                  result:
+                    $ref: '#/components/schemas/BearerRegisterAuthenticationResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Đăng nhập
+      description: Đăng nhập vào hệ thống
+      operationId: login
+      requestBody:
+        description: Thông tin đăng nhập
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBodyRequest'
+        required: true
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login success
+                  result:
+                    $ref: '#/components/schemas/BearerAuthenticationResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Lấy thông tin của user
+      description: Lấy thông tin của user
+      operationId: getme
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get my profile success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get my profile success
+                  result:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/ProfileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+    patch:
+      tags:
+        - users
+      summary: Cập nhật thông tin tài khoản
+      description: Cập nhật thông tin tài khoản
+      operationId: updateMe
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeRequest'
+        required: false
+
+      responses:
+        200:
+          description: Cập nhật tài khoản thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Update my profile success
+                  result:
+                    $ref: '#/components/schemas/ProfileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/logout:
+    post:
+      tags:
+        - users
+      summary: Đăng xuất
+      description: Đăng xuất phiên đăng nhâp
+      operationId: logout
+      requestBody:
+        description: 'Đăng xuất phiên đăng nhập'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogoutRequest'
+        required: true
+      responses:
+        '200':
+          description: Get my profile success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout success
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+      security:
+        - BearerAuth: []
+  /users/refresh-token:
+    post:
+      tags:
+        - users
+      summary: Tạo access_token và refresh_token mới
+      description: Tạo access_token và refresh_token mới
+      operationId: refreshToken
+      requestBody:
+        description: Tạo access_token và refresh_token mới
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGetTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: Refresh token success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Refresh token success
+                  result:
+                    $ref: '#/components/schemas/BearerAuthenticationResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/verify-email:
+    post:
+      tags:
+        - users
+      summary: Xác thực tài khoản
+      description: Xác thực tài khoản để sử dụng hệ thống
+      operationId: verifyEamil
+      requestBody:
+        description: Token của tài khoản cần verify
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_verify_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjU1ZDg3MzFlMjgxYzQwZWYxMjU0N2U2IiwidG9rZW5fdHlwZSI6MywidmVyaWZ5IjowLCJpYXQiOjE3MDA2MjgyNzMsImV4cCI6MTcwMTIzMzA3M30.mJt5pMbIV1tZv65_ZLg2qNOCjn_cxvGj3rMnnCCDcl8
+        required: true
+      responses:
+        200:
+          description: 'Tài khoản đã xác thực thành công'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email verify success
+                  result:
+                    $ref: '#/components/schemas/BearerAuthenticationResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/resend-verify-email:
+    post:
+      tags:
+        - users
+      summary: Gửi lại token
+      description: Gửi lại token để tiếp tục xác thực tài khoản
+      operationId: resendEmailToken
+      responses:
+        200:
+          description: Đã gửi token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resend verify email success
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+      security:
+        - BearerAuth: []
+  # don't forgot-password
+  /users/{username}:
+    get:
+      tags:
+        - users
+      summary: Lấy thông tin của người khác
+      description: Lấy thông tin của người khác
+      operationId: getProfile
+      parameters:
+        - name: username
+          in: path
+          description: username của người muốn lấy thông tin
+          required: true
+          schema:
+            type: string
+            example: '@Twittername465542'
+      responses:
+        200:
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get my profile success
+                  result:
+                    $ref: '#/components/schemas/ProfileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/follow:
+    post:
+      tags:
+        - users
+      summary: Theo dõi
+      description: Theo dõi ai đó
+      operationId: follow
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Thông tin của người muốn theo dõi
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowRequest'
+        required: true
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/follow/{user_id}:
+    delete:
+      tags:
+        - users
+      summary: Bỏ theo dõi
+      description: Bỏ theo dõi ai đó
+      operationId: unfollow
+      security:
+        - BearerAuth: []
+
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id của người muốn bỏ theo dõi
+          required: true
+          schema:
+            type: string
+            example: '653d37d0e31e7cb503083a56'
+      responses:
+        200:
+          description: Bỏ theo dõi thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unfollow success
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /users/change-password:
+    put:
+      tags:
+        - users
+      summary: Đổi mật khẩu
+      description: Đổi mật khẩu của tài khoản
+      operationId: changePassword
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Nhập mật khẩu cũ và mật khẩu muốn đổi
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: Cập nhật mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Change password success
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+
+  # Media
+  /medias/upload-image:
+    post:
+      tags:
+        - medias
+      summary: Tải file
+      description: Chọn file và tải lên
+      operationId: uploadFile
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Chọn file bạn muốn tải lên
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+        required: true
+      responses:
+        '200':
+          description: tải file lên thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /medias/upload-video:
+    post:
+      tags:
+        - medias
+      summary: Tải video
+      description: Chọn video và tải lên
+      operationId: uploadVideo
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Chọn video bạn muốn tải lên
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: tải video lên thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /medias/upload-video-hls:
+    post:
+      tags:
+        - medias
+      summary: Tải video chuyển sang HLS
+      description: Chọn video tải lên và chuyển snag HLS
+      operationId: uploadVideoHLS
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Chọn video bạn muốn chuyển sang HLS
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: Chuyển video sang HLS thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /medias/video-status/{id}:
+    get:
+      tags:
+        - medias
+      summary: trạng thái của video
+      description: Xem thông tin trạng thái của video
+      operationId: getVideoStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: id của video muốn xem thông tin
+          required: true
+          schema:
+            type: string
+            example: 'czSU817F5GkyM3-KXa5g5'
+      responses:
+        '200':
+          description: Lấy thông tin trạng thái của video thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoStatusResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Static
+  /static/video-hls/{id}/master.m3u8:
+    get:
+      tags:
+        - static
+      summary: thông tin của video HLS
+      description: Xem thông tin của video HLS
+      operationId: getVideoHLS
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: id của video HLS muốn xem thông tin
+          required: true
+          schema:
+            type: string
+            example: 'pVTtxKK87QWfesK6lNB_B'
+      responses:
+        '200':
+          description: Lấy thông tin của video HLS thành công
+          content:
+            application/json:
+              schema:
+                type: string
+                example: '#EXTM3U
+                  #EXT-X-VERSION:3
+                  #EXT-X-STREAM-INF:BANDWIDTH=1047421,RESOLUTION=406x720,CODECS="avc1.640020,mp4a.40.2"
+                  v0/prog_index.m3u8
+                  #EXT-X-STREAM-INF:BANDWIDTH=1047421,RESOLUTION=608x1080,CODECS="avc1.640032,mp4a.40.2"
+                  v1/prog_index.m3u8'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Tweet
+  /tweet:
+    post:
+      tags:
+        - tweets
+      summary: Đăng tweet
+      description: Đăng một tweet
+      operationId: postTweet
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Thông tin của bài tweet muốn đăng
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TweetRequest'
+        required: true
+      responses:
+        '200':
+          description: Đăng tweet thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Create tweet successfully!
+                  result:
+                    $ref: '#/components/schemas/TweetResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+    # get tweet follower
+  /tweet?limit=5&page=1:
+    get:
+      tags:
+        - tweets
+      summary: Lấy tweet đã theo dõi
+      description: Lấy tweet đã đăng từ người mình theo dõi
+      operationId: getTweetFollower
+      security:
+        - BearerAuth: []
+      # params in query
+      parameters:
+        - name: limit
+          in: query
+          description: Số lượng tweet trong mỗi trang
+          required: true
+          schema:
+            type: number
+            example: 5
+        - name: page
+          in: query
+          description: Trang muốn hiển thị
+          required: true
+          schema:
+            type: number
+            example: 1
+      responses:
+        200:
+          description: Lấy tweet thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get New Feeds Successfully
+                  result:
+                    $ref: '#/components/schemas/GetTweetFollower'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /tweet/{tweet_id}:
+    get:
+      tags:
+        - tweets
+      summary: Lấy thông tin của tweet
+      description: Lấy thông tin của tweet
+      operationId: getTweet
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tweet_id
+          in: path
+          description: tweet_id của tweet muốn xem thông tin
+          required: true
+          schema:
+            type: string
+            example: '655f97b8f0af613632f12ee9'
+      responses:
+        '200':
+          description: Lấy thông tin tweet thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get tweet successfully!
+                  result:
+                    $ref: '#/components/schemas/GetTweetResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Bookmark
+  /bookmark:
+    post:
+      tags:
+        - bookmarks
+      summary: Thêm bookmark
+      description: Thêm 1 bookmark
+      operationId: postBookmark
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Thông tin của bài tweet muốn bookmark
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InteractTweetRequest'
+
+        required: true
+      responses:
+        '200':
+          description: Tạo bookmark thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Bookmark successfully
+                  result:
+                    $ref: '#/components/schemas/InteractTweetResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /bookmark/{tweet_id}:
+    delete:
+      tags:
+        - bookmarks
+      summary: Xóa bookmark theo tweet_id
+      description: Xóa 1 bookmark đã được bookmark trước đó
+      operationId: deleteBookmarkByTweetId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: tweet_id
+          in: path
+          description: tweet_id của tweet muốn xóa khỏi bookmark
+          required: true
+          schema:
+            type: string
+            example: '651d78825cbab1f8db548cdf'
+      responses:
+        '200':
+          description: Hủy bookmark thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unbookmark successfully
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /bookmark/{bookmark_id}:
+    delete:
+      tags:
+        - bookmarks
+      summary: Xóa bookmark theo bookmark_id
+      description: Xóa 1 bookmark đã được bookmark trước đó
+      operationId: deleteBookmarkByBookmarkId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bookmark_id
+          in: path
+          description: bookmark_id của tweet muốn xóa khỏi bookmark
+          required: true
+          schema:
+            type: string
+            example: '651afac58389be8b6e9e57b7'
+      responses:
+        '200':
+          description: Hủy bookmark thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unbookmark successfully
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Like
+  /like:
+    post:
+      tags:
+        - likes
+      summary: Thích tweet
+      description: Thích tweet
+      operationId: postLike
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Thông tin của bài tweet muốn like
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InteractTweetRequest'
+
+        required: true
+      responses:
+        '200':
+          description: Like thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Like successfully
+                  result:
+                    $ref: '#/components/schemas/InteractTweetResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  /like/{like_id}:
+    delete:
+      tags:
+        - likes
+      summary: Bỏ like tweet theo like_id
+      description: Xóa like tweet đã được like trước đó
+      operationId: deleteLike
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: like_id
+          in: path
+          description: like_id của tweet muốn xóa khỏi bookmark
+          required: true
+          schema:
+            type: string
+            example: '656245233a3ff64f9935037a'
+      responses:
+        '200':
+          description: Hủy like thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: UnLike successfully
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Search
+  /search?content=Corporis&page=1&limit=5&media_type=image&people_follow=on:
+    get:
+      tags:
+        - search
+      summary: Tìm kiếm tweet
+      description: Tìm kiếm tweet theo content
+      operationId: getSearchAdvanced
+      security:
+        - BearerAuth: []
+      # params in query
+      parameters:
+        - name: content
+          in: query
+          description: Nội dung tìm kiếm
+          required: true
+          schema:
+            type: string
+            example: Corporis
+        - name: media_type
+          description: Thể loại media tìm kiếm
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/MediaTypeQuery'
+        - name: people_follow
+          in: query
+          description: Phạm vi search
+          required: true
+          schema:
+            $ref: '#/components/schemas/PeopleFollowType'
+        - name: page
+          in: query
+          description: Trang muốn hiển thị
+          required: true
+          schema:
+            type: number
+            example: 1
+        - name: limit
+          in: query
+          description: Số lượng trang muốn hiển thị
+          required: true
+          schema:
+            type: number
+            example: 5
+      responses:
+        200:
+          description: Lấy tweet thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Search tweet Successfully
+                  result:
+                    $ref: '#/components/schemas/SearchTweetResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+  # Conversation
+  /conversation/receivers/{receiver_id}?page=1&limit=10:
+    get:
+      tags:
+        - conversations
+      summary: Lấy conversations
+      description: Lấy message giữa hai ngừi
+      operationId: getConversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: receiver_id
+          in: path
+          description: receiver_id của người muốn lấy message
+          required: true
+          schema:
+            type: string
+            format: mongoId
+            example: '653d37d0e31e7cb503083a56'
+        - name: page
+          in: query
+          description: Trang muốn hiển thị
+          required: true
+          schema:
+            type: number
+            example: 1
+        - name: limit
+          in: query
+          description: Số lượng trang muốn hiển thị
+          required: true
+          schema:
+            type: number
+            example: 10
+      responses:
+        '200':
+          description: Lấy conversation thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get conversation successfully
+                  result:
+                    schema:
+                    $ref: '#/components/schemas/ConversationResponse'
+        400:
+          description: Lỗi dữ liệu đầu vào
+        422:
+          description: Invalid input
+        500:
+          description: Lỗi máy chủ
+# components
+components:
+  schemas:
+    # Request
+    LoginBodyRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: tranvandatevondev0503@gmail.com
+        password:
+          type: string
+          format: password
+          example: 35701537Scss
+    RegisterBodyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Trần Văn Đạt
+        email:
+          type: string
+          format: email
+          example: tranvandatevondev0503@gmail.com
+        password:
+          type: string
+          format: password
+          example: 35701537Scss
+        confirm_password:
+          type: string
+          format: password
+          example: 35701537Scss
+        date_of_birth:
+          type: string
+          format: ISO8601
+    UserLogoutRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjUzZDM3ZDBlMzFlN2NiNTAzMDgzYTU2IiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3MDA1NTg5MDUsImV4cCI6MTcwOTE5ODkwNX0.4wA0SrVrUFiSjE6K1962yr8ahfbOHiJo06t-DT-jSsU
+    UserGetTokenRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjUzZDM3ZDBlMzFlN2NiNTAzMDgzYTU2IiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3MDA1NTg5MDUsImV4cCI6MTcwOTE5ODkwNX0.4wA0SrVrUFiSjE6K1962yr8ahfbOHiJo06t-DT-jSsU
+    UpdateMeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Trần Văn Đạt
+        date_of_birth:
+          type: string
+          format: ISO8601
+          example: 2015-08-07T17:00:00.000Z
+        bio:
+          type: string
+          example: This is my bio
+        location:
+          type: string
+          example: This is my location
+        website:
+          type: string
+          example: www.example.com
+        username:
+          type: string
+          example: '@Twittername465542'
+        avatar:
+          type: string
+          example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/1b5aae4734c998b5a1558d70001.jpg
+        cover_photo:
+          type: string
+          example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/1b5aae4734c998b5a1558d70001.jpg
+    FollowRequest:
+      type: object
+      properties:
+        followed_user_id:
+          type: string
+          example: 652996f4457872e7045e2df7
+    ChangePasswordRequest:
+      type: object
+      properties:
+        old_password:
+          type: string
+          example: 35701537Scss
+        password:
+          type: string
+          example: 123123Scss
+        confirm_password:
+          type: string
+          example: 123123Scss
+    TweetRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/TweetType'
+        audience:
+          $ref: '#/components/schemas/TweetAudience'
+        content:
+          type: string
+          example: Tôi là Trần Văn Đạt
+        parent_id:
+          type: string
+          example: 651d78825cbab1f8db548cdf
+        hashtags:
+          type: array
+          items:
+            type: string
+            example: 'tranvandat'
+        mentions:
+          type: array
+          items:
+            type: string
+            format: mongoId
+            example: 651c497cec0c5c8a03e32df2
+        medias:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/13ad3efcf0e64b57c85f0550001.jpg
+              type:
+                $ref: '#/components/schemas/MediaType'
+    InteractTweetRequest:
+      type: object
+      properties:
+        tweet_id:
+          type: string
+          format: mongoId
+          example: 651d78825cbab1f8db548cdf
+    # Response
+    BearerAuthenticationResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjUzZDM3ZDBlMzFlN2NiNTAzMDgzYTU2IiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3MDA0NTU4OTQsImV4cCI6MTcwMDU0MjI5NH0.Bb6meCnuciwUjkB15v4aVXY4FaIwZlSAHcLKL6oy4F0
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjUzZDM3ZDBlMzFlN2NiNTAzMDgzYTU2IiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3MDA0NTU4OTQsImV4cCI6MTcwOTA5NTg5NH0.0kpg0XP5AJf6RotA_GIxV9tzvmpPq4t3IvVXAoYexSo
+    BearerRegisterAuthenticationResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjU1YWViM2EyMTE3ZjYwNTA0NDY1NTQyIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjowLCJpYXQiOjE3MDA0NTcyNzUsImV4cCI6MTcwMDU0MzY3NX0.hYDBTQjmNTVUFUnna1GuEEHv5fGE0Gm6xIrmYVsDvV0
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjU1YWViM2EyMTE3ZjYwNTA0NDY1NTQyIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjowLCJpYXQiOjE3MDA0NTcyNzUsImV4cCI6MTcwOTA5NzI3NX0.wEWiTanZDH-YsBjqHsmgA8EP0InQWa5o1tiYnnWP59o
+        email_verify_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjU1YWViM2EyMTE3ZjYwNTA0NDY1NTQyIiwidG9rZW5fdHlwZSI6MywidmVyaWZ5IjowLCJpYXQiOjE3MDA0NTcyNzQsImV4cCI6MTcwMTA2MjA3NH0.NuOkh2V3gpX1-yFa-1xQHwRVYhqmtbSv-HGcZgoAjfo
+    ProfileResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: MongoId
+          example: 655aeb3a2117f60504465542
+        name:
+          type: string
+          example: Trần Văn Đạt
+        email:
+          type: string
+          format: email
+          example: tranvandatevondev0503@gmail.com
+        date_of_birth:
+          type: string
+          format: ISO8601
+          example: 2015-08-07T17:00:00.000Z
+        created_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-20T05:14:34.290Z
+        updated_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-20T05:14:34.290Z
+        verify:
+          $ref: '#/components/schemas/UserVerifyStatus'
+        twitter_circle:
+          type: array
+          items:
+            type: string
+          example: [655aeb3a2117f60504465542, 655aeb3a2117f60504465114]
+        bio:
+          type: string
+          example: This is my bio
+        location:
+          type: string
+          example: This is my location
+        website:
+          type: string
+          example: www.example.com
+        username:
+          type: string
+          example: '@Twittername465542'
+        avatar:
+          type: string
+          example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/1b5aae4734c998b5a1558d70001.jpg
+        cover_photo:
+          type: string
+          example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/1b5aae4734c998b5a1558d70001.jpg
+    FollowResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Follow success
+    UploadFileResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: 'https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/13ad3efcf0e64b57c85f0550001.jpg'
+              type:
+                $ref: '#/components/schemas/MediaType'
+    VideoStatusResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Get video status success
+        result:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 654869337a2cc69406339490
+            name:
+              type: string
+              example: czSU817F5GkyM3-KXa5g5
+            status:
+              $ref: '#/components/schemas/EncodingStatus'
+            message:
+              type: string
+            created_at:
+              type: string
+              format: ISO8601
+              example: 2023-11-06T04:18:59.585Z
+            update_at:
+              type: string
+              format: ISO8601
+              example: 2023-11-06T04:18:59.585Z
+            updated_at:
+              type: string
+              format: ISO8601
+              example: 2023-11-06T04:24:13.041Z
+    TweetResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: mongoId
+          example: 655f858e9ca3dded28e60863
+        user_id:
+          type: string
+          format: mongoId
+          example: 653d37d0e31e7cb503083a56
+        type:
+          $ref: '#/components/schemas/TweetType'
+        audience:
+          $ref: '#/components/schemas/TweetAudience'
+        content:
+          type: string
+          example: Tôi là Trần Văn Đạt
+        parent_id:
+          type: string
+          format: mongoId
+          example: 651d78825cbab1f8db548cdf
+        hashtags:
+          type: array
+          items:
+            type: string
+            example: '651998cf978c4ef5bc59a76c'
+        mentions:
+          type: array
+          items:
+            type: string
+            format: mongoId
+            example: 651c497cec0c5c8a03e32df2
+        medias:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/13ad3efcf0e64b57c85f0550001.jpg
+              type:
+                $ref: '#/components/schemas/MediaType'
+        guest_views:
+          type: number
+          example: 10
+        user_views:
+          type: number
+          example: 10
+        created_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-23T17:02:06.529Z
+        updated_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-23T17:02:06.529Z
+    GetTweetResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: mongoId
+          example: 655f858e9ca3dded28e60863
+        user_id:
+          type: string
+          format: mongoId
+          example: 653d37d0e31e7cb503083a56
+        type:
+          $ref: '#/components/schemas/TweetType'
+        audience:
+          $ref: '#/components/schemas/TweetAudience'
+        content:
+          type: string
+          example: Tôi là Trần Văn Đạt
+        parent_id:
+          type: string
+          format: mongoId
+          example: 651d78825cbab1f8db548cdf
+        hashtags:
+          type: array
+          items:
+            type: string
+            example: '651998cf978c4ef5bc59a76c'
+        mentions:
+          type: array
+          items:
+            type: string
+            format: mongoId
+            example: 651c497cec0c5c8a03e32df2
+        medias:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: https://twitter-s3-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/images/13ad3efcf0e64b57c85f0550001.jpg
+              type:
+                $ref: '#/components/schemas/MediaType'
+        guest_views:
+          type: number
+          example: 10
+        user_views:
+          type: number
+          example: 10
+        created_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-23T17:02:06.529Z
+        updated_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-23T17:02:06.529Z
+        bookmarks:
+          type: number
+          example: 10
+        likes:
+          type: number
+          example: 10
+        retweet_count:
+          type: number
+          example: 10
+        comment_count:
+          type: number
+          example: 10
+        quote_count:
+          type: number
+          example: 10
+    GetTweetFollower:
+      type: object
+      properties:
+        limit:
+          type: number
+          example: 5
+        page:
+          type: number
+          example: 1
+        total_page:
+          type: number
+          example: 160
+        tweet:
+          type: object
+          properties:
+            total:
+              type: number
+              example: 800
+            tweets:
+              type: array
+              items:
+                type: object
+                example:
+                  - _id: 651d78825cbab1f8db548cdf
+                    user_id: 6507cc99461d5604c6fbfe72
+                    type: 2
+                    audience: 0
+                    content: test audience validator with mode is public
+                    parent_id: null
+                    hashtags:
+                      [
+                        { _id: 651998cf978c4ef5bc59a76c, name: tranvandat },
+                        { _id: 651998cf978c4ef5bc59a76d, name: tranvan },
+                        { _id: 65199920978c4ef5bc59a774, name: tweet }
+                      ]
+                    mentions: []
+                    medias: []
+                    guest_views: 5
+                    user_views: 22
+                    created_at: 2023-10-04T14:36:50.682Z
+                    updated_at: 2023-11-25T11:53:48.849Z
+                    user:
+                      {
+                        _id: 6507cc99461d5604c6fbfe72,
+                        name: văn đạt trần,
+                        email: tranvandatevondev0503@gmail.com,
+                        created_at: 2023-09-18T04:05:45.365Z,
+                        updated_at: 2023-11-22T11:07:41.674Z,
+                        verify: 1,
+                        bio: tranvandat,
+                        location: vietnam,
+                        website: http://swagger.io/terms/,
+                        username: '@Twitternamefbfe72',
+                        avatar: https://picsum.photos/seed/rq2VY/640/480,
+                        cover_photo: 'https://picsum.photos/seed/rq2VY/640/480'
+                      }
+                    bookmarks: 1
+                    likes: 1
+                    views: 26
+                    retweet_count: 1
+                    comment_count: 18
+                    quote_count: 2
+    InteractTweetResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: mongoId
+          example: 65623caa3a3ff64f99350375
+        tweet_id:
+          type: string
+          format: mongoId
+          example: 651d78825cbab1f8db548cdf
+        user_id:
+          type: string
+          format: mongoId
+          example: 6507cc99461d5604c6fbfe72
+        created_at:
+          type: string
+          format: ISO8601
+          example: 2023-11-25T18:27:54.992Z
+    SearchTweetResponse:
+      type: object
+      properties:
+        limit:
+          type: number
+          example: 5
+        page:
+          type: number
+          example: 1
+        total_page:
+          type: number
+          example: 2
+        tweets:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                format: mongoId
+                example: 65299700457872e7045e43e9
+              user_id:
+                type: string
+                format: mongoId
+                example: 652996f4457872e7045e2e00
+              type:
+                schema:
+                $ref: '#/components/schemas/MediaType'
+              audience:
+                schema:
+                $ref: '#/components/schemas/TweetAudience'
+              content:
+                type: string
+                example: Corroboro animadverto custodia suffoco. Adulescens temptatio alienus
+              parent_id:
+                type: string
+                format: mongoId
+                example: 652996fa457872e7045e67779
+              hashtags:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      format: mongoId
+                      example: 652996fa457872e7045e3115
+                    name:
+                      type: string
+                      example: NodeJS
+              mentions:
+                type: array
+                items:
+                  type: string
+                  format: mongoId
+                  example: 651c497cec0c5c8a03e32df2
+              medias:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: number
+                      example: 1
+                    url:
+                      type: string
+                      example: https://picsum.photos/seed/rq2VY/640/480
+              guest_views:
+                type: number
+                example: 0
+              user_views:
+                type: number
+                example: 13
+              created_at:
+                type: string
+                format: ISO8601
+                example: 2023-10-04T14:36:50.682Z
+              updated_at:
+                type: string
+                format: ISO8601
+                example: 2023-10-04T14:36:50.682Z
+              user:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    format: mongoId
+                    example: 652996f4457872e7045e2e00
+                  name:
+                    type: string
+                    example: Jodie_Keeling
+                  email:
+                    type: string
+                    example: Beverly.Torp54@gmail.com
+                  created_at:
+                    type: string
+                    format: ISO8601
+                    example: 2023-10-04T14:36:50.682Z
+                  updated_at:
+                    type: string
+                    format: ISO8601
+                    example: 2023-10-04T14:36:50.682Z
+                  verify:
+                    schema:
+                    $ref: '#/components/schemas/UserVerifyStatus'
+                  bio:
+                    type: string
+                    example: tranvandat
+                  location:
+                    type: string
+                    example: vietnam
+                  website:
+                    type: string
+                    example: http://swagger.io/terms/
+                  username:
+                    type: string
+                    example: '@Twittername652996f4457872e7045e2e00'
+                  avatar:
+                    type: string
+                    example: 'https://picsum.photos/seed/rq2VY/640/480'
+                  cover_photo:
+                    type: string
+                    example: 'https://picsum.photos/seed/rq2VY/640/480'
+              bookmarks:
+                type: number
+                example: 1
+              likes:
+                type: number
+                example: 15
+              retweet_count:
+                type: number
+                example: 0
+              comment_count:
+                type: number
+                example: 20
+              quote_count:
+                type: number
+                example: 0
+    ConversationResponse:
+      type: object
+      properties:
+        limit:
+          type: number
+          example: 10
+        page:
+          type: number
+          example: 1
+        total_page:
+          type: number
+          example: 14
+        conversations:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                format: mongoId
+                example: 655a1fc22117f6050446553d
+              sender_id:
+                type: string
+                format: mongoId
+                example: 653d37d0e31e7cb503083a56
+              content:
+                type: string
+                example: hệ thống đã ổn định r
+              receiver_id:
+                type: string
+                format: mongoId
+                example: 6507cc99461d5604c6fbfe72
+              created_at:
+                type: string
+                format: ISO8601
+                example: 2023-10-04T14:36:50.682Z
+              updated_at:
+                type: string
+                format: ISO8601
+                example: 2023-10-04T14:36:50.682Z
+
+    # Enum
+    UserVerifyStatus:
+      type: number
+      enum: [Unverified, Verified, Banned]
+      example: 1
+    MediaType:
+      type: number
+      enum: [Image, Video, VideoHLS]
+      example: 0
+    MediaTypeQuery:
+      type: string
+      enum: [image, video]
+      example: image
+    EncodingStatus:
+      type: number
+      enum: [pending, processing, success, failed]
+      example: 2
+    TweetType:
+      type: number
+      enum: [Tweet, Retweet, Comment, QuoteTweet]
+      example: 2
+    TweetAudience:
+      type: number
+      enum: [Everyone, TwitterCircle]
+      example: 1
+    PeopleFollowType:
+      type: string
+      enum: [off, on]
+      example: on
+  #  Authorization
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
