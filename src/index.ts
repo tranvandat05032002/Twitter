@@ -4,6 +4,10 @@ import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { defaultHandleError } from './middlewares/errors.middlewares'
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
+import fs from 'fs'
+import path from 'path'
+import YAML from 'yaml'
 import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
 import { UPLOAD_VIDEO_DIR } from './constants/dir'
@@ -16,7 +20,8 @@ import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 // import '~/utils/fake'
-
+const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
+const swaggerDocument = YAML.parse(file)
 dotenv.config()
 const app = express()
 const httpServer = createServer(app)
@@ -42,6 +47,7 @@ const DOMAIN = process.env.DOMAIN
 
 initFolder()
 app.use(express.json())
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/static', staticRouter)

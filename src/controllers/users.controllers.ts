@@ -93,7 +93,7 @@ export const verifyEmailTokenController = async (
   const result = await usersService.verifyEmail(user_id)
 
   return res.json({
-    message: USERS_MESSAGES.REFRESH_TOKEN_SUCCESS,
+    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
   })
 }
@@ -235,7 +235,7 @@ export const getProfileController = async (req: Request<GetProfileParams>, res: 
   const { username } = req.params
   const user = await usersService.getProfile(username)
   return res.status(200).json({
-    message: USERS_MESSAGES.GET_ME_SUCCESS,
+    message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
     result: user
   })
 }

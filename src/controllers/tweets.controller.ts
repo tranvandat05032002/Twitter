@@ -46,7 +46,6 @@ export const getTweetChildrenController = async (req: Request<TweetParams, any, 
     }
   })
 }
-
 export const getNewFeedsController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
   const user_id = req.decoded_authorization?.user_id as string
   const limit = Number(req.query.limit as string)
