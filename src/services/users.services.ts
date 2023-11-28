@@ -3,7 +3,6 @@ import databaseService from './database.services'
 import { IRegisterReqBody, UpdateMeReqBody } from '~/models/request/User.requests'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
-import dotenv from 'dotenv'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import { ObjectId } from 'mongodb'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
@@ -18,7 +17,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import Follower from '~/models/schemas/Follow.schema'
 import axios from 'axios'
 import { sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
-dotenv.config()
+import { envConfig } from '~/constants/config'
 
 interface INodeMailer {
   from?: string
@@ -35,9 +34,9 @@ class UsersService {
         verify
       },
       options: {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.accessTokenExpiresIn
       },
-      privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
+      privateKey: envConfig.jwtSecretAccessToken as string
     })
   }
 
@@ -50,7 +49,7 @@ class UsersService {
           verify,
           exp
         },
-        privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+        privateKey: envConfig.jwtSecretRefreshToken as string
       })
     }
     return signToken({
@@ -60,9 +59,9 @@ class UsersService {
         verify
       },
       options: {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.refreshTokenExpiresIn
       },
-      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+      privateKey: envConfig.jwtSecretRefreshToken as string
     })
   }
   private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -73,9 +72,9 @@ class UsersService {
         verify
       },
       options: {
-        expiresIn: process.env.VERIFY_EMAIL_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.emailVerifyTokenExpiresIn
       },
-      privateKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
+      privateKey: envConfig.jwtSecretEmailVerifyToken as string
     })
   }
   public async sendEmailToken(mailModel: INodeMailer) {
@@ -120,9 +119,9 @@ class UsersService {
         verify
       },
       options: {
-        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+        expiresIn: envConfig.forgotPasswordTokenExpiresIn
       },
-      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+      privateKey: envConfig.jwtSecretForgotPasswordToken as string
     })
   }
   private SignAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -131,7 +130,7 @@ class UsersService {
   private decodedRefreshToken(refresh_token: string) {
     return verifyToken({
       token: refresh_token,
-      secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+      secretOrPublicKey: envConfig.jwtSecretRefreshToken as string
     })
   }
   public async register(payload: IRegisterReqBody) {
@@ -158,7 +157,7 @@ class UsersService {
     // await sendVerifyEmail({
     //   toAddress: payload.email,
     //   subject: 'Twitter verify your email',
-    //   body: htmlVerify(email_verify_token, process.env.CLIENT_URL as string)
+    //   body: htmlVerify(email_verify_token, envConfig.clientUrl as string)
     // })
     await sendVerifyRegisterEmail(payload.email, email_verify_token)
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
@@ -199,12 +198,12 @@ class UsersService {
   private async getGoogleAuthToken(code: string) {
     const body = {
       code,
-      client_id: process.env.GOOGLE_AUTH_CLIENT_ID as string,
-      client_secret: process.env.GOOGLE_AUTH_CLIENT_SECRET_KEY,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      client_id: envConfig.googleClientId as string,
+      client_secret: envConfig.googleClientSecret,
+      redirect_uri: envConfig.googleRedirectUri,
       grant_type: 'authorization_code'
     }
-    const { data } = await axios.post(process.env.GOOGLE_TOKEN_URI as string, body, {
+    const { data } = await axios.post(envConfig.googleTokenURI as string, body, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -384,7 +383,7 @@ class UsersService {
     // await this.sendEmailToken({
     //   to: email as string,
     //   subject: 'Twitter verify your email',
-    //   html: htmlVerify(email_verify_token, process.env.CLIENT_URL as string)
+    // html: htmlVerify(email_verify_token, envConfig.clientUrl as string)
     // })
     await sendVerifyRegisterEmail(email, email_verify_token)
     return {
@@ -438,7 +437,7 @@ class UsersService {
         otp,
         user_id
       },
-      process.env.JWT_SECRET_OTP as string,
+      envConfig.jwtSecretOTP as string,
       {
         expiresIn: '5m'
       }

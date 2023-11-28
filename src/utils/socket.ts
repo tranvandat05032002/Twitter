@@ -9,10 +9,11 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import Conversation from '~/models/schemas/Conversation'
 import { ObjectId } from 'mongodb'
 import { Server as ServerHttp } from 'http'
+import { envConfig } from '~/constants/config'
 const initSocket = (httpServer: ServerHttp) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL
+      origin: envConfig.clientUrl
     }
   })
   interface IConversation {

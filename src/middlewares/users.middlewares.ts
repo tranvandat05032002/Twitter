@@ -16,6 +16,7 @@ import { validate } from '~/utils/validation'
 import jwt from 'jsonwebtoken'
 import { REGEX_USERNAME } from '~/constants/regex'
 import { verifyAccessToken } from '~/utils/common'
+import { envConfig } from '~/constants/config'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -80,7 +81,7 @@ const forgotPasswordTokenSchema: ParamSchema = {
       try {
         const decoded_forgot_password_token = await verifyToken({
           token: value,
-          secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+          secretOrPublicKey: envConfig.jwtSecretForgotPasswordToken as string
         })
         const { user_id } = decoded_forgot_password_token
         const user = await databaseService.users.findOne({
@@ -123,7 +124,7 @@ const forgotPasswordOTPSchema: ParamSchema = {
         })
       }
       try {
-        const decoded_authorization = jwt.verify(value, process.env.JWT_SECRET_OTP as string, {
+        const decoded_authorization = jwt.verify(value, envConfig.jwtSecretOTP as string, {
           ignoreExpiration: true
         }) as OTPPayload
         const { user_id } = decoded_authorization
@@ -301,7 +302,7 @@ export const refreshTokenValidator = validate(
               const [decoded_refresh_token, refresh_token] = await Promise.all([
                 verifyToken({
                   token: value,
-                  secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+                  secretOrPublicKey: envConfig.jwtSecretRefreshToken as string
                 }),
                 databaseService.RefreshTokens.findOne({
                   token: value
@@ -347,7 +348,7 @@ export const verifyEmailTokenValidator = validate(
             try {
               const decoded_email_verify_token = await verifyToken({
                 token: value,
-                secretOrPublicKey: process.env.JWT_SECRET_EMAIL_TOKEN as string
+                secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken as string
               })
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
@@ -433,7 +434,7 @@ export const verifyOTPValidator = validate(
               })
             }
             try {
-              const decoded_authorization = jwt.verify(otp_token, process.env.JWT_SECRET_OTP as string, {
+              const decoded_authorization = jwt.verify(otp_token, envConfig.jwtSecretOTP as string, {
                 ignoreExpiration: true
               }) as OTPPayload
               ;(req as Request).decoded_otp_token = decoded_authorization

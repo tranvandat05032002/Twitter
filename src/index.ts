@@ -1,5 +1,4 @@
 import express from 'express'
-import dotenv from 'dotenv'
 import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { defaultHandleError } from './middlewares/errors.middlewares'
@@ -19,10 +18,10 @@ import { searchRouter } from './routes/searchs.routes'
 import { createServer } from 'http'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
+import { envConfig } from './constants/config'
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
-dotenv.config()
 const app = express()
 const httpServer = createServer(app)
 
@@ -42,8 +41,8 @@ databaseService.connect().then(() => {
 
 initSocket(httpServer)
 
-const PORT = process.env.PORT
-const DOMAIN = process.env.DOMAIN
+const PORT = envConfig.port
+const DOMAIN = envConfig.domain
 
 initFolder()
 app.use(express.json())

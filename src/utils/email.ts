@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-undef */
-import { config } from 'dotenv'
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses'
 import fs from 'fs'
 import path from 'path'
-config()
+import { envConfig } from '~/constants/config'
 // Create SES service object
 const verifyEmailTemplate = fs.readFileSync(path.resolve('src/html/verify-email.html'), 'utf8')
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION as string,
+  region: envConfig.awsRegion as string,
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string
+    secretAccessKey: envConfig.awsSecretAccessKey as string,
+    accessKeyId: envConfig.awsAccessKeyId as string
   }
 })
 // create send mail command
@@ -57,7 +56,7 @@ const createSendEmailCommand = ({
 
 export const sendVerifyEmail = ({ toAddress, subject, body }: { toAddress: string; subject: string; body: string }) => {
   const sendEmailCommand = createSendEmailCommand({
-    fromAddress: process.env.SES_FROM_ADDRESS as string, // process.env.SES_FROM_ADDRESS
+    fromAddress: envConfig.sesFromAddress as string,
     toAddresses: toAddress,
     body,
     subject
@@ -77,6 +76,6 @@ export const sendVerifyRegisterEmail = (
       .replace('{{title}}', 'Please verify your email')
       .replace('{{content}}', 'Click the button below to verify your email')
       .replace('{{titleLink}}', 'Verify')
-      .replace('{{link}}', `${process.env.CLIENT_URL}/verify?token=${email_verify_token}`)
+      .replace('{{link}}', `${envConfig.clientUrl}/verify?token=${email_verify_token}`)
   })
 }

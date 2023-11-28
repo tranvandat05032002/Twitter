@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-undef */
 // process.env.DOTENV_CONFIG_PATH = '/Users/spiderman/Desktop/Code/Backend/Twitter/server/.env'
-const { config } = require('dotenv')
+const { envConfig } = require('./constants/config')
 const { SendEmailCommand, SESClient } = require('@aws-sdk/client-ses')
-config()
 // Create SES service object
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION,
+  region: envConfig.awsRegion,
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID
+    secretAccessKey: envConfig.awsSecretAccessKey,
+    accessKeyId: envConfig.awsAccessKeyId
   }
 })
 // create send mail command
@@ -48,7 +47,7 @@ const createSendEmailCommand = ({
 
 const sendVerifyEmail = async (toAddress, subject, body) => {
   const sendEmailCommand = createSendEmailCommand({
-    fromAddress: process.env.SES_FROM_ADDRESS, // process.env.SES_FROM_ADDRESS
+    fromAddress: envConfig.sesFromAddress,
     toAddresses: toAddress,
     body,
     subject

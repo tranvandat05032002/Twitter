@@ -1,15 +1,15 @@
-import { config } from 'dotenv'
+
 import { S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import fs from 'fs'
 import { Response } from 'express'
 import HTTP_STATUS from '~/constants/httpStatus'
-config()
+import { envConfig } from '~/constants/config'
 const s3 = new S3({
-  region: process.env.AWS_REGION as string,
+  region: envConfig.awsRegion as string,
   credentials: {
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string
+    secretAccessKey: envConfig.awsSecretAccessKey as string,
+    accessKeyId: envConfig.awsAccessKeyId as string
   }
 })
 // const file = fs.readFileSync(path.resolve('uploads/image/image_2023-09-25_10-59-44.png'))
@@ -25,7 +25,7 @@ export const s3UploadFile = ({
   const parallelUploads3 = new Upload({
     client: s3,
     params: {
-      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Bucket: envConfig.s3BucketName as string,
       Key: fileName,
       Body: fs.readFileSync(filePath),
       ContentType: contentType
@@ -44,7 +44,7 @@ export const s3UploadFile = ({
 export const sendFileFromS3 = async (res: Response, filePath: string) => {
   try {
     const data = await s3.getObject({
-      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Bucket: envConfig.s3BucketName as string,
       Key: filePath
     })
     ;(data.Body as any).pipe(res)

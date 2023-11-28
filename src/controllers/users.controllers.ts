@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { NextFunction, Request, Response } from 'express'
-import User, { IUser } from '~/models/schemas/User.chema'
+import User from '~/models/schemas/User.chema'
 import { ParamsDictionary } from 'express-serve-static-core'
 import usersService from '~/services/users.services'
 import {
@@ -22,9 +22,9 @@ import {
 } from '~/models/request/User.requests'
 import { USERS_MESSAGES } from '~/constants/message'
 import databaseService from '~/services/database.services'
-import { truncate } from 'fs/promises'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { UserVerifyStatus } from '~/constants/enum'
+import { envConfig } from '~/constants/config'
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
@@ -272,7 +272,7 @@ export const oAuthController = async (req: Request, res: Response, next: NextFun
   const { code } = req.query
   const result = await usersService.oAuth(code as string)
   if (!result) return
-  const urlRedirectVerify = `${process.env.CLIENT_REDIRECT_VERIFY_CALLBACK}?token=${result.email_verify_token}&access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
-  const urlRedirectHome = `${process.env.CLIENT_REDIRECT_HOME_CALLBACK}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirectVerify = `${envConfig.clientRedirectVerifyCallback}?token=${result.email_verify_token}&access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirectHome = `${envConfig.clientRedirectHomeCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
   return res.redirect(result.verify === 0 ? urlRedirectVerify : urlRedirectHome)
 }

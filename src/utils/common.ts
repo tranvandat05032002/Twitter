@@ -5,6 +5,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { verifyToken } from './jwt'
 import { normalization } from './handlers'
 import { JsonWebTokenError } from 'jsonwebtoken'
+import { envConfig } from '~/constants/config'
 
 export const verifyAccessToken = async (access_token: string, req?: Request) => {
   if (!access_token) {
@@ -16,7 +17,7 @@ export const verifyAccessToken = async (access_token: string, req?: Request) => 
   try {
     const decoded_authorization = await verifyToken({
       token: access_token,
-      secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
+      secretOrPublicKey: envConfig.jwtSecretAccessToken as string
     })
     if (req) {
       ;(req as Request).decoded_authorization = decoded_authorization
