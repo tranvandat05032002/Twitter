@@ -149,17 +149,9 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
-    // await this.sendEmailToken({
-    //   to: payload.email,
-    //   subject: 'Twitter verify your email',
-    //   html: htmlVerify(email_verify_token)
-    // })
-    // await sendVerifyEmail({
-    //   toAddress: payload.email,
-    //   subject: 'Twitter verify your email',
-    //   body: htmlVerify(email_verify_token, envConfig.clientUrl as string)
-    // })
+    // verify emai with AWS
     await sendVerifyRegisterEmail(payload.email, email_verify_token)
+
     const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
@@ -378,14 +370,9 @@ class UsersService {
         }
       }
     )
-    // const user = await this.getMe(user_id)
-    // const email = user.user?.email
-    // await this.sendEmailToken({
-    //   to: email as string,
-    //   subject: 'Twitter verify your email',
-    // html: htmlVerify(email_verify_token, envConfig.clientUrl as string)
-    // })
+    // verify email with AWS
     await sendVerifyRegisterEmail(email, email_verify_token)
+
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
     }
