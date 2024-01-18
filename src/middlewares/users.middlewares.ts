@@ -116,7 +116,6 @@ const forgotPasswordOTPSchema: ParamSchema = {
   trim: true,
   custom: {
     options: async (value, { req }) => {
-      console.log('Forgot Token: ', value)
       if (!value) {
         throw new ErrorWithStatus({
           message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
@@ -426,7 +425,6 @@ export const verifyOTPValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             const otp_token = (value || '').split(' ')[1]
-            console.log('OTP-Token: ', otp_token)
             if (!otp_token) {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.OTP_TOKEN_IS_REQUIRED,

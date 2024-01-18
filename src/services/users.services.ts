@@ -18,6 +18,7 @@ import Follower from '~/models/schemas/Follow.schema'
 import axios from 'axios'
 import { sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
 import { envConfig } from '~/constants/config'
+import { sendVerifyResetPasswordEmail } from '~/utils/otp'
 
 interface INodeMailer {
   from?: string
@@ -443,11 +444,7 @@ class UsersService {
       }
     )
     try {
-      await this.sendEmailToken({
-        to: email as string,
-        subject: 'Twitter reset your password',
-        html: `Mã OTP của bạn: ${otp}`
-      })
+      sendVerifyResetPasswordEmail(email, otp)
     } catch (error) {
       console.log(error)
     }
