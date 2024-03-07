@@ -22,6 +22,19 @@ export const ServeImageController = (req: Request, res: Response, next: NextFunc
     }
   })
 }
+export const uploadImageAvatarController = async (req: Request, res: Response, next: NextFunction) => {
+  const url = await mediaService.uploadImageAvatar(req)
+  return res.status(200).json({
+    result: url
+  })
+}
+export const uploadImageCoverPhotoController = async (req: Request, res: Response, next: NextFunction) => {
+  const url = await mediaService.uploadImageCoverPhoto(req)
+  console.log("Request: ", req)
+  return res.status(200).json({
+    result: url
+  })
+}
 export const uploadVideoController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadVideo(req)
   return res.status(200).json({

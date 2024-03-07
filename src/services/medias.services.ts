@@ -3,7 +3,7 @@ import path from 'path'
 import fsPromise from 'fs/promises'
 import sharp from 'sharp'
 import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
-import { getFiles, getNameFromFullName, handleUploadImage, handleUploadVideo } from '~/utils/file'
+import { getFiles, getNameFromFullName, handleUploadImage, handleUploadImageAvatar, handleUploadImageCoverPhoto, handleUploadVideo } from '~/utils/file'
 import { envConfig, isProduction } from '~/constants/config'
 import { Media } from '~/models/Other'
 import { EncodingStatus, MediaType } from '~/constants/enum'
@@ -121,6 +121,59 @@ class MediaService {
         await sharp(file.filepath).jpeg().toFile(newPath)
         const s3Result = await s3UploadFile({
           fileName: 'images/' + newFileName,
+          filePath: newPath,
+          contentType: mime.getType(newPath) as string
+        })
+        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
+        return {
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
+          type: MediaType.Image
+          // url: isProduction
+          //   ? `${envConfig.host}/static/image/${newFileName}`
+          //   : `http://localhost:${envConfig.port}/static/image/${newFileName}`,
+          // type: MediaType.Image
+        }
+      })
+    )
+    return result
+  }
+  public async uploadImageAvatar(req: Request) {
+    const file = await handleUploadImageAvatar(req)
+    console.log(req)
+    const result: Media[] = await Promise.all(
+      file.map(async (file) => {
+        const newFile = getNameFromFullName(file.newFilename)
+        const newFileName = `${newFile}.jpg`
+        const newPath = path.resolve(UPLOAD_IMAGE_DIR, newFileName)
+        await sharp(file.filepath).jpeg().toFile(newPath)
+        const s3Result = await s3UploadFile({
+          fileName: 'images-avatar/' + newFileName,
+          filePath: newPath,
+          contentType: mime.getType(newPath) as string
+        })
+        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
+        return {
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
+          type: MediaType.Image
+          // url: isProduction
+          //   ? `${envConfig.host}/static/image/${newFileName}`
+          //   : `http://localhost:${envConfig.port}/static/image/${newFileName}`,
+          // type: MediaType.Image
+        }
+      })
+    )
+    return result
+  }
+  public async uploadImageCoverPhoto(req: Request) {
+    const file = await handleUploadImageCoverPhoto(req)
+    const result: Media[] = await Promise.all(
+      file.map(async (file) => {
+        const newFile = getNameFromFullName(file.newFilename)
+        const newFileName = `${newFile}.jpg`
+        const newPath = path.resolve(UPLOAD_IMAGE_DIR, newFileName)
+        await sharp(file.filepath).jpeg().toFile(newPath)
+        const s3Result = await s3UploadFile({
+          fileName: 'images-cover-photo/' + newFileName,
           filePath: newPath,
           contentType: mime.getType(newPath) as string
         })

@@ -182,7 +182,7 @@ const imageSchema: ParamSchema = {
   trim: true,
   isLength: {
     options: {
-      min: 1,
+      min: 0,
       max: 400
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_LENGTH

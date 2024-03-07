@@ -53,6 +53,64 @@ export const handleUploadImage = async (req: Request) => {
     })
   })
 }
+export const handleUploadImageAvatar = async (req: Request) => {
+  const formidable = (await import('formidable')).default
+  const form = formidable({
+    uploadDir: UPLOAD_IMAGE_TEMP_DIR,
+    maxFiles: 4,
+    keepExtensions: true,
+    maxFileSize: 500 * 1024, // 500KB
+    maxTotalFileSize: 400 * 1025 * 4,
+    filter: function ({ name, originalFilename, mimetype }) {
+      const valid = name === 'avatar' && Boolean(mimetype?.includes('image/'))
+      if (!valid) {
+        form.emit('error' as any, new Error('File type is not value') as any)
+      }
+      return valid
+    }
+  })
+  return new Promise<File[]>((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err)
+      }
+      // eslint-disable-next-line no-extra-boolean-cast
+      if (!Boolean(files.avatar)) {
+        return reject(new Error('File is empty'))
+      }
+      resolve(files.avatar as File[])
+    })
+  })
+}
+export const handleUploadImageCoverPhoto = async (req: Request) => {
+  const formidable = (await import('formidable')).default
+  const form = formidable({
+    uploadDir: UPLOAD_IMAGE_TEMP_DIR,
+    maxFiles: 4,
+    keepExtensions: true,
+    maxFileSize: 500 * 1024, // 500KB
+    maxTotalFileSize: 400 * 1025 * 4,
+    filter: function ({ name, originalFilename, mimetype }) {
+      const valid = name === 'coverPhoto' && Boolean(mimetype?.includes('image/'))
+      if (!valid) {
+        form.emit('error' as any, new Error('File type is not value') as any)
+      }
+      return valid
+    }
+  })
+  return new Promise<File[]>((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err)
+      }
+      // eslint-disable-next-line no-extra-boolean-cast
+      if (!Boolean(files.coverPhoto)) {
+        return reject(new Error('File is empty'))
+      }
+      resolve(files.coverPhoto as File[])
+    })
+  })
+}
 //video
 export const handleUploadVideo = async (req: Request) => {
   const formidable = (await import('formidable')).default

@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import {
+  uploadImageAvatarController,
   uploadImageController,
+  uploadImageCoverPhotoController,
   uploadVideoController,
   uploadVideoHLSController,
   videoStatusController
@@ -14,6 +16,18 @@ mediasRouter.post(
   accessTokenValidator,
   verifiedUserValidator,
   wrapRequestHandler(uploadImageController)
+)
+mediasRouter.post(
+  '/upload-image/avatar',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(uploadImageAvatarController)
+)
+mediasRouter.post(
+  '/upload-image/cover-photo',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(uploadImageCoverPhotoController)
 )
 mediasRouter.post(
   '/upload-video',
