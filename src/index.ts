@@ -2,6 +2,7 @@ import express from 'express'
 import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { defaultHandleError } from './middlewares/errors.middlewares'
+import { rateLimit } from 'express-rate-limit'
 import cors, { CorsOptions } from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
@@ -38,7 +39,15 @@ databaseService.connect().then(() => {
   databaseService.indexVideoStatus()
   databaseService.indexTweet()
 })
+// rate limit
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  legacyHeaders: false // Disable the `X-RateLimit-*` headers.
+})
 
+app.use(limiter)
 initSocket(httpServer)
 
 const PORT = envConfig.port

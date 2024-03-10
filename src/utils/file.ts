@@ -30,8 +30,8 @@ export const handleUploadImage = async (req: Request) => {
     uploadDir: UPLOAD_IMAGE_TEMP_DIR,
     maxFiles: 4,
     keepExtensions: true,
-    maxFileSize: 500 * 1024, // 500KB
-    maxTotalFileSize: 400 * 1025 * 4,
+    maxFileSize: 4 * 1024 * 1024, // 4MB
+    maxTotalFileSize: 16 * 1024 * 1024, // 16MB
     filter: function ({ name, originalFilename, mimetype }) {
       const valid = name === 'image' && Boolean(mimetype?.includes('image/'))
       if (!valid) {
@@ -59,8 +59,8 @@ export const handleUploadImageAvatar = async (req: Request) => {
     uploadDir: UPLOAD_IMAGE_TEMP_DIR,
     maxFiles: 4,
     keepExtensions: true,
-    maxFileSize: 500 * 1024, // 500KB
-    maxTotalFileSize: 400 * 1025 * 4,
+    maxFileSize: 4 * 1024 * 1024, // 4MB
+    maxTotalFileSize: 16 * 1024 * 1024, // 16MB
     filter: function ({ name, originalFilename, mimetype }) {
       const valid = name === 'avatar' && Boolean(mimetype?.includes('image/'))
       if (!valid) {
@@ -88,8 +88,8 @@ export const handleUploadImageCoverPhoto = async (req: Request) => {
     uploadDir: UPLOAD_IMAGE_TEMP_DIR,
     maxFiles: 4,
     keepExtensions: true,
-    maxFileSize: 500 * 1024, // 500KB
-    maxTotalFileSize: 400 * 1025 * 4,
+    maxFileSize: 4 * 1024 * 1024, // 4MB
+    maxTotalFileSize: 16 * 1024 * 1024, // 16MB
     filter: function ({ name, originalFilename, mimetype }) {
       const valid = name === 'coverPhoto' && Boolean(mimetype?.includes('image/'))
       if (!valid) {
