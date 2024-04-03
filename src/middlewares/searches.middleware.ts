@@ -29,3 +29,23 @@ export const searchValidator = validate(
     ['query']
   )
 )
+
+export const searchUserValidator = validate(
+  checkSchema(
+    {
+      name: {
+        isString: {
+          errorMessage: SEARCH_MESSAGES.SEARCH_NAME_IS_STRING
+        }
+      },
+      people_follow: {
+        optional: true,
+        isIn: {
+          options: [Object.values(PeopleFollowType)]
+        },
+        errorMessage: SEARCH_MESSAGES.SEARCH_PEOPLE_FOLLOW_ON_OR_OFF
+      }
+    },
+    ['query']
+  )
+)

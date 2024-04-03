@@ -2,7 +2,7 @@
 module.exports = {
   apps: [
     {
-      name: 'twitter-dat',
+      name: 'Twitter-API',
       script: 'node dist/index.js',
       env: {
         NODE_ENV: 'development'

@@ -69,7 +69,8 @@ export const USERS_MESSAGES = {
   GMAIL_NOT_VERIFIED: 'Gmail not verified',
   UPLOAD_SUCCESS: 'Upload success',
   REFRESH_TOKEN_SUCCESS: 'Refresh token success',
-  GET_VIDEO_STATUS_SUCCESS: 'Get video status success'
+  GET_VIDEO_STATUS_SUCCESS: 'Get video status success',
+  USER_SEARCH_SUCCESS: 'Search user Successfully'
 }
 
 export const TWEETS_MESSAGES = {
@@ -91,7 +92,6 @@ export const TWEETS_MESSAGES = {
   TWEET_NEW_FEED_GET_SUCCESS: 'Get New Feeds Successfully',
   TWEET_SEARCH_SUCCESS: 'Search tweet Successfully'
 } as const
-
 export const BOOKMARK_MESSAGES = {
   BOOKMARK_SUCCESSFULLY: 'Bookmark successfully',
   UNBOOKMARK_SUCCESSFULLY: 'Unbookmark successfully'
@@ -103,6 +103,7 @@ export const LIKE_MESSAGES = {
 
 export const SEARCH_MESSAGES = {
   SEARCH_CONTENT_IS_STRING: 'Content must be string',
+  SEARCH_NAME_IS_STRING: 'Content must be string',
   SEARCH_PEOPLE_FOLLOW_ON_OR_OFF: 'People follow must be on or off'
 } as const
 

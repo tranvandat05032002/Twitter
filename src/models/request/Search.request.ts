@@ -6,3 +6,7 @@ export interface SearchQuery extends Pagination, Query {
   media_type?: MediaTypeQuery
   people_follow?: PeopleFollowType
 }
+export interface SearchUserQuery extends Pagination, Query {
+  name: string
+  people_follow?: PeopleFollowType
+}

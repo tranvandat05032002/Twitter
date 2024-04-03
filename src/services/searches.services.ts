@@ -281,6 +281,84 @@ class SearchService {
       total: total[0]?.total || 0
     }
   }
+  async searchUser({
+    limit,
+    page,
+    name,
+    people_follow,
+    user_id
+  }: {
+    limit: number
+    page: number
+    name: string
+    people_follow?: PeopleFollowType
+    user_id: string
+  }) {
+    const $match: any = {
+      $text: {
+        $search: name
+      }
+    }
+    if (people_follow && people_follow === PeopleFollowType.Following) {
+      const user_id_obj = new ObjectId(user_id)
+      const followed_user_ids = await databaseService.followers
+        .find(
+          {
+            user_id: user_id_obj
+          },
+          {
+            projection: {
+              followed_user_id: 1,
+              _id: 0
+            }
+          }
+        )
+        .toArray()
+      const ids = followed_user_ids.map((item) => item.followed_user_id)
+      ids.push(user_id_obj)
+      $match['user_id'] = {
+        $in: ids
+      }
+    }
+    const [user, total] = await Promise.all([
+      databaseService.users
+        .aggregate([
+          {
+            $match
+          },
+          {
+            $project: {
+              password: 0,
+              created_at: 0,
+              date_of_birth: 0,
+              updated_at: 0,
+              email_verify_token: 0,
+              forgot_password_token: 0
+            }
+          },
+          {
+            $skip: limit * (page - 1)
+          },
+          {
+            $limit: limit
+          }
+        ]).toArray(),
+      databaseService.users
+        .aggregate([
+          {
+            $match
+          },
+          {
+            $count: 'total'
+          }
+        ])
+        .toArray()
+    ])
+    return {
+      user,
+      total: total[0]?.total || 0
+    }
+  }
 }
 
 export const searchService = new SearchService()
