@@ -139,7 +139,6 @@ class MediaService {
   }
   public async uploadImageAvatar(req: Request) {
     const file = await handleUploadImageAvatar(req)
-    console.log(req)
     const result: Media[] = await Promise.all(
       file.map(async (file) => {
         const newFile = getNameFromFullName(file.newFilename)

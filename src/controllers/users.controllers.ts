@@ -251,6 +251,12 @@ export const followController = async (
   return res.status(200).json(result)
 }
 
+export const getUsersFollowingController = async(req: Request, res: Response, next: NextFunction) => {
+  const {user_id} = req.decoded_authorization as TokenPayload
+  const result = await usersService.getUsersFollowing(user_id)
+  return res.status(200).json(result)
+}
+
 export const unfollowController = async (req: Request<UnfollowReqParams>, res: Response, next: NextFunction) => {
   const { user_id } = req.decoded_authorization as TokenPayload
   const { user_id: followed_user_id } = req.params

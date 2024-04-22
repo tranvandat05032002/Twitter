@@ -596,6 +596,54 @@ class UsersService {
       message: USERS_MESSAGES.UNFOLLOW_SUCCESS
     }
   }
+  public async getUsersFollowing(user_id: string) {
+    const [users, total] = await Promise.all([
+      databaseService.followers
+        .aggregate<any>(
+          [
+            {
+              $match: {
+                user_id: new ObjectId(user_id)
+              }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'followed_user_id',
+                foreignField: '_id',
+                as: 'followUsers'
+              }
+            },
+            {
+              $unwind: {
+                path: '$followUsers'
+              }
+            },
+            {
+              $project: {
+                followed_user_id: 0,
+                created_at: 0,
+                user_id: 0,
+                'followUsers.password': 0,
+                'followUsers.email_verify_token': 0,
+                'followUsers.forgot_password_token': 0,
+                'followUsers.created_at': 0,
+                'followUsers.updated_at': 0,
+                'followUsers._id': 0
+              }
+            }
+          ]
+        )
+        .toArray(),
+      databaseService.followers.countDocuments({
+        user_id: new ObjectId(user_id),
+      })
+    ])
+    return {
+      users,
+      total
+    }
+  }
   public async changePassword(user_id: string, password: string) {
     await databaseService.users.updateOne(
       {

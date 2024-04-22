@@ -30,7 +30,6 @@ export const uploadImageAvatarController = async (req: Request, res: Response, n
 }
 export const uploadImageCoverPhotoController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadImageCoverPhoto(req)
-  console.log("Request: ", req)
   return res.status(200).json({
     result: url
   })

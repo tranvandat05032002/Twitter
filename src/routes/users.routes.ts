@@ -9,6 +9,7 @@ import {
   forgotPasswordOTPController,
   getMeController,
   getProfileController,
+  getUsersFollowingController,
   loginController,
   logoutController,
   oAuthController,
@@ -228,6 +229,20 @@ usersRouter.delete(
   unfollowValidator,
   wrapRequestHandler(unfollowController)
 )
+
+usersRouter.get(
+  '/v1/follow',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getUsersFollowingController)
+)
+/**
+ * Description. get users following
+ * Path: /v1/follow
+ * Method: GET
+ * Body: {}
+ * Header: {Authorization: Bear <access_token>}
+ */
 
 /**
  * Description. change password
