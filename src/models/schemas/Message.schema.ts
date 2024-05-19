@@ -2,8 +2,8 @@ import { ObjectId } from "mongodb"
 
 interface IMessage {
   _id?: ObjectId
-  chatId: string
-  senderId: string
+  chatId: ObjectId
+  senderId: ObjectId
   text: string
   created_at?: Date
   updated_at?: Date
@@ -11,8 +11,8 @@ interface IMessage {
 
 export default class Message {
   _id?: ObjectId
-  chatId: string
-  senderId: string
+  chatId: ObjectId
+  senderId: ObjectId
   text: string
   created_at?: Date
   updated_at?: Date

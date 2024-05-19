@@ -5,7 +5,7 @@ export interface ChatReqBody {
   receiver_id: string
 }
 export interface ChatReqParams extends ParamsDictionary {
-  user_id: string
+  userId: string
 }
 export interface FindChatReqParams extends ParamsDictionary {
   firstId: string

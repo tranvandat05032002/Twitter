@@ -3,8 +3,13 @@
 @email = "tranvandatevondev0503@gmail.com"
 @password = "123123Scss"
 @access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjVhNDM3ZDM3MzllMGFjNmRkMDA1ODUxIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3MTYxMDEyMjEsImV4cCI6MTcxNjE4NzYyMX0.VTEHcScF4NqBtRPd9yj6WcWGi2IBrnARXg3jx398RBM
-@sender_id = 65a437d3739e0ac6dd005851
-@receiver_id = 66375a1c71763643e5b9b57a
+#params
+@sender_id_param = 65a437d3739e0ac6dd005851
+@chat_id_param = 66499ced69b1962c1cc4cf83
+#body
+@receiver_id_body = "66375a1c71763643e5b9b57a"
+@sender_id_body = "65a437d3739e0ac6dd005851"
+@chat_id_body = "66499ced69b1962c1cc4cf83"
 POST {{baseUrl}}/users/login HTTP/1.1
 Content-Type: application/json
 
@@ -23,14 +28,31 @@ Content-Type: application/json
 Authorization: token {{access_token}}
 
 {
-  "sender_id": {{sender_id}},
-  "receiver_id": {{receiver_id}}
+  "sender_id": {{sender_id_body}},
+  "receiver_id": {{receiver_id_body}}
 }
 ###
 # find chat
-GET {{baseUrl}}/chat/{{sender_id}} HTTP/1.1
+GET {{baseUrl}}/chat/{{sender_id_param}} HTTP/1.1
 Authorization: token {{access_token}}
 ###
 # find specific chat with users
 GET {{baseUrl}}/chat/find/65a437d3739e0ac6dd005851/66375a1c71763643e5b9b57a HTTP/1.1
+Authorization: token {{access_token}}
+
+### message
+# create message
+POST {{baseUrl}}/message HTTP/1.1
+Content-Type: application/json
+Authorization: token {{access_token}}
+
+{
+  "chat_id": {{chat_id_body}},
+  "sender_id": {{sender_id_body}},
+  "text": "Tôi là Trần Văn Đạt"
+}
+
+###
+# Get message from chatID
+GET {{baseUrl}}/message/{{chat_id_param}}
 Authorization: token {{access_token}}
