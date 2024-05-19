@@ -21,6 +21,8 @@ import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 import { envConfig, isProduction } from './constants/config'
 import helmet from 'helmet'
+import { chatsRouter } from './routes/chats.routes'
+import { messagesRouter } from './routes/messages.routes'
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
@@ -64,6 +66,8 @@ app.use('/search', searchRouter)
 app.use('/bookmark', bookmarksRouter)
 app.use('/like', likesRouter)
 app.use('/conversation', conversationsRouter)
+app.use('/chat', chatsRouter)
+app.use('/message', messagesRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 app.use(defaultHandleError)
 

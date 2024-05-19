@@ -110,3 +110,9 @@ export const SEARCH_MESSAGES = {
 export const CONVERSATION_MESSAGES = {
   GET_CONVERSATION: 'Get conversation successfully'
 } as const
+
+export const CHAT_MESSAGES = {
+  CHAT_CREATE_SUCCESS: 'Create chat successfully!',
+  GET_USER_CHAT_SUCCESS: 'Get user chat successfully!',
+  FIND_CHAT_SUCCESS: 'Find chat successfully!'
+}

@@ -9,6 +9,7 @@ import Bookmark from '~/models/schemas/Bookmark.schema'
 import Like from '~/models/schemas/Like.schema'
 import Conversation from '~/models/schemas/Conversation'
 import { envConfig } from '~/constants/config'
+import Chat from '~/models/schemas/Chat.schema'
 const uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
   private client: MongoClient
@@ -112,6 +113,9 @@ class DatabaseService {
   }
   get conversations(): Collection<Conversation> {
     return this.db.collection(envConfig.dbConversationCollection as string)
+  }
+  get chats(): Collection<Chat> {
+    return this.db.collection(envConfig.dbChatCollection as string)
   }
 }
 const databaseService = new DatabaseService()
