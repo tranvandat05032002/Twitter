@@ -3,12 +3,14 @@ import databaseService from "./database.services"
 import { ObjectId } from "mongodb"
 
 class MessageService {
-  public async createMessage({ chat_id, sender_id, text }: { chat_id: string, sender_id: string, text: string }) {
+  public async createMessage({ chat_id, sender_id, text, created_at, updated_at }: { chat_id: string, sender_id: string, text: string, created_at: Date, updated_at: Date }) {
     const result = await databaseService.messages.insertOne(
       new Message({
         chatId: new ObjectId(chat_id),
         senderId: new ObjectId(sender_id),
-        text
+        text,
+        created_at,
+        updated_at
       })
     )
     const newMessage = await databaseService.messages.findOne({

@@ -22,7 +22,7 @@ export default class Message {
         (this.chatId = message.chatId),
         (this.senderId = message.senderId),
         (this.text = message.text),
-        (this.created_at = date),
-        (this.updated_at = date)
+        (this.created_at = message.created_at ? message.created_at : date),
+        (this.updated_at = message.updated_at ? message.updated_at : date)
   }
 }

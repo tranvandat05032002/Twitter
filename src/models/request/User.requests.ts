@@ -42,6 +42,9 @@ export interface VerifyEmailReqBody {
 export interface GetProfileParams extends ParamsDictionary {
   username: string
 }
+export interface GetProfileIdParams extends ParamsDictionary {
+  userId: string
+}
 export interface UnfollowReqParams extends ParamsDictionary {
   user_id: string
 }

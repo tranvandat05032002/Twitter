@@ -9,6 +9,7 @@ import {
   forgotPasswordOTPController,
   getMeController,
   getProfileController,
+  getProfileIdController,
   getUsersFollowingController,
   loginController,
   logoutController,
@@ -200,6 +201,7 @@ usersRouter.patch(
  * Method: GET
  */
 usersRouter.get('/:username', wrapRequestHandler(getProfileController))
+usersRouter.get('/v1/:userId', wrapRequestHandler(getProfileIdController))
 
 /**
  * Description. Follow someone

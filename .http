@@ -2,14 +2,16 @@
 @baseUrl = http://127.0.0.1:4000
 @email = "tranvandatevondev0503@gmail.com"
 @password = "123123Scss"
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjVhNDM3ZDM3MzllMGFjNmRkMDA1ODUxIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3MTYxMDEyMjEsImV4cCI6MTcxNjE4NzYyMX0.VTEHcScF4NqBtRPd9yj6WcWGi2IBrnARXg3jx398RBM
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjVhNDM3ZDM3MzllMGFjNmRkMDA1ODUxIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3MTY5NTg4MzAsImV4cCI6MTcxNzA0NTIzMH0.nq0QklkLdqIDiU1Dn9Uns82iUb6f4VZDL1BosNOK8oU
 #params
 @sender_id_param = 65a437d3739e0ac6dd005851
-@chat_id_param = 66499ced69b1962c1cc4cf83
+@chat_id_param = 6649fcf72194b86f3f4a2a7c
+@receiver_id_param = 66375a1c71763643e5b9b57a
+@receiver_id_param_con = 6507cc99461d5604c6fbfe72
 #body
-@receiver_id_body = "66375a1c71763643e5b9b57a"
+@receiver_id_body = "652996f4457872e7045e2df9"
 @sender_id_body = "65a437d3739e0ac6dd005851"
-@chat_id_body = "66499ced69b1962c1cc4cf83"
+@chat_id_body = "6649fcf72194b86f3f4a2a7c"
 POST {{baseUrl}}/users/login HTTP/1.1
 Content-Type: application/json
 
@@ -18,7 +20,7 @@ Content-Type: application/json
   "password": {{password}}
 }
 ###
-GET http://127.0.0.1:4000/users/me HTTP/1.1
+GET {{baseUrl}}/users/me HTTP/1.1
 Authorization: token {{access_token}}
 
 ### Chat
@@ -37,7 +39,7 @@ GET {{baseUrl}}/chat/{{sender_id_param}} HTTP/1.1
 Authorization: token {{access_token}}
 ###
 # find specific chat with users
-GET {{baseUrl}}/chat/find/65a437d3739e0ac6dd005851/66375a1c71763643e5b9b57a HTTP/1.1
+GET {{baseUrl}}/chat/find/{{sender_id_param}}/{{receiver_id_param}} HTTP/1.1
 Authorization: token {{access_token}}
 
 ### message
@@ -49,10 +51,29 @@ Authorization: token {{access_token}}
 {
   "chat_id": {{chat_id_body}},
   "sender_id": {{sender_id_body}},
-  "text": "Tôi là Trần Văn Đạt"
+  "text": "098"
 }
 
 ###
 # Get message from chatID
-GET {{baseUrl}}/message/{{chat_id_param}}
+GET {{baseUrl}}/message/{{chat_id_param}} HTTP/1.1
 Authorization: token {{access_token}}
+###
+GET {{baseUrl}}/conversation/receivers/{{receiver_id_param_con}}?limit=1&page=1 HTTP/1.1
+Authorization: token {{access_token}}
+###
+GET {{baseUrl}}/users/v1/{{receiver_id_param}} HTTP/1.1
+Authorization: token {{access_token}}
+
+### Test Coze
+@token_coze = pat_6rqc1aJX7sx54eOdHqcKTtjD6dqxdVVMZRiaRnxDGcshYXo3T14A7SlyL0tbMa50
+POST https://api.coze.com/open_api/v2/chat HTTP/1.1
+Content-Type: application/json
+Authorization: Token {{token_coze}}
+{
+  "conversation_id": "123",
+  "bot_id": "{YOUR BOT}",
+  "user": "29032201862555",
+  "query": "hello",
+  "stream": false
+}

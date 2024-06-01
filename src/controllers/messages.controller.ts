@@ -5,12 +5,14 @@ import messageService from "~/services/messages.services"
 export const createMessageController = async (req: Request<ParamsDictionary, any, MessageReqBody>,
   res: Response,
   next: NextFunction) => {
-  const { chat_id, sender_id, text } = req.body
+  const { chat_id, sender_id, text, created_at, updated_at } = req.body
   console.log(req.body)
   const result = await messageService.createMessage({
     chat_id,
     sender_id,
-    text
+    text,
+    created_at,
+    updated_at
   })
   res.json({
     message: "Create message successfully !",
