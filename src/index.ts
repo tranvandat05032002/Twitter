@@ -30,7 +30,8 @@ const app = express()
 const httpServer = createServer(app)
 
 const corsOptions: CorsOptions = {
-  origin: isProduction ? envConfig.clientUrl : 'http://localhost:3000'
+  // origin: isProduction ? envConfig.clientUrl : 'http://localhost:3000'
+  origin: '*'
 }
 app.use(helmet())
 app.use(cors(corsOptions))

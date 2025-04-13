@@ -304,6 +304,11 @@ class TweetService {
             }
           },
           {
+            $sort: {
+              created_at: -1 // Sắp xếp giảm dần theo thời gian tạo
+            }
+          },
+          {
             $skip: limit * (page - 1)
           },
           {
@@ -488,7 +493,7 @@ class TweetService {
       }
     )
     tweets.map((tweet) => {
-      ;(tweet.updated_at = date), (tweet.user_views += 1)
+      ; (tweet.updated_at = date), (tweet.user_views += 1)
     })
 
     return { tweets, total: total[0].total || 0 }

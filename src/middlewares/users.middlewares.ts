@@ -136,7 +136,7 @@ const forgotPasswordOTPSchema: ParamSchema = {
             status: HTTP_STATUS.UNAUTHORIZED
           })
         }
-        ;(req as Request).decoded_otp_token = decoded_authorization
+        ; (req as Request).decoded_otp_token = decoded_authorization
       } catch (error) {
         if (error instanceof JsonWebTokenError) {
           throw new ErrorWithStatus({
@@ -313,7 +313,7 @@ export const refreshTokenValidator = validate(
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
-              ;(req as Request).decoded_authorization = decoded_refresh_token
+              ; (req as Request).decoded_authorization = decoded_refresh_token
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
@@ -349,7 +349,7 @@ export const verifyEmailTokenValidator = validate(
                 token: value,
                 secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken as string
               })
-              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+                ; (req as Request).decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
               throw new ErrorWithStatus({
                 message: normalization((error as JsonWebTokenError).message),
@@ -435,7 +435,7 @@ export const verifyOTPValidator = validate(
               const decoded_authorization = jwt.verify(otp_token, envConfig.jwtSecretOTP as string, {
                 ignoreExpiration: true
               }) as OTPPayload
-              ;(req as Request).decoded_otp_token = decoded_authorization
+                ; (req as Request).decoded_otp_token = decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({
                 message: normalization((error as JsonWebTokenError).message),

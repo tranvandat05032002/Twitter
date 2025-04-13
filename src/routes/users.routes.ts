@@ -232,19 +232,19 @@ usersRouter.delete(
   wrapRequestHandler(unfollowController)
 )
 
-usersRouter.get(
-  '/v1/follow',
-  accessTokenValidator,
-  verifiedUserValidator,
-  wrapRequestHandler(getUsersFollowingController)
-)
 /**
- * Description. get users following
+ * Description: get users following
  * Path: /v1/follow
  * Method: GET
  * Body: {}
  * Header: {Authorization: Bear <access_token>}
  */
+usersRouter.get(
+  '/me/follow',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getUsersFollowingController)
+)
 
 /**
  * Description. change password

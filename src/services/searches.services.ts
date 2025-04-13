@@ -274,7 +274,8 @@ class SearchService {
       }
     )
     tweets.map((tweet) => {
-      ;(tweet.updated_at = date), (tweet.user_views += 1)
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      ; (tweet.updated_at = date), (tweet.user_views += 1)
     })
     return {
       tweets,
@@ -295,68 +296,117 @@ class SearchService {
     user_id: string
   }) {
     const $match: any = {
+      _id: {
+        $ne: new ObjectId(user_id)
+      },
       $text: {
         $search: name
       }
     }
-    if (people_follow && people_follow === PeopleFollowType.Following) {
-      const user_id_obj = new ObjectId(user_id)
-      const followed_user_ids = await databaseService.followers
-        .find(
-          {
-            user_id: user_id_obj
-          },
-          {
-            projection: {
-              followed_user_id: 1,
-              _id: 0
-            }
+    // if (people_follow && people_follow === PeopleFollowType.Following) {
+    //   const user_id_obj = new ObjectId(user_id)
+    //   const followed_user_ids = await databaseService.followers
+    //     .find(
+    //       {
+    //         user_id: user_id_obj
+    //       },
+    //       {
+    //         projection: {
+    //           followed_user_id: 1,
+    //           _id: 0
+    //         }
+    //       }
+    //     )
+    //     .toArray()
+    //   const ids = followed_user_ids.map((item) => item.followed_user_id)
+    //   ids.push(user_id_obj)
+    //   $match['user_id'] = {
+    //     $in: ids
+    //   }
+    // }
+
+    const user_id_obj = new ObjectId(user_id)
+    const users = await databaseService.users.aggregate(
+      [
+        {
+          $match
+        },
+        {
+          $lookup: {
+            from: "followers",
+            let: { userId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$user_id", new ObjectId(user_id)] }, // User hiện tại follow
+                      { $eq: ["$followed_user_id", "$$userId"] } // So với user trong danh sách
+                    ]
+                  }
+                }
+              }
+            ],
+            as: "following_status"
           }
-        )
-        .toArray()
-      const ids = followed_user_ids.map((item) => item.followed_user_id)
-      ids.push(user_id_obj)
-      $match['user_id'] = {
-        $in: ids
-      }
-    }
-    const [user, total] = await Promise.all([
-      databaseService.users
-        .aggregate([
-          {
-            $match
-          },
-          {
-            $project: {
-              password: 0,
-              created_at: 0,
-              date_of_birth: 0,
-              updated_at: 0,
-              email_verify_token: 0,
-              forgot_password_token: 0
-            }
-          },
-          {
-            $skip: limit * (page - 1)
-          },
-          {
-            $limit: limit
+        },
+        {
+          $addFields: {
+            is_following: { $gt: [{ $size: "$following_status" }, 0] }
           }
-        ]).toArray(),
-      databaseService.users
-        .aggregate([
-          {
-            $match
-          },
-          {
-            $count: 'total'
+        },
+        {
+          $project: {
+            following_status: 0,
+            password: 0,
+            email_verify_token: 0,
+            forgot_password_token: 0
           }
-        ])
-        .toArray()
-    ])
+        },
+        {
+          $sort: { name: 1 }
+        }
+      ]
+    ).toArray()
+
+    // const [user, total] = await Promise.all([
+    //   databaseService.users
+    //     .aggregate([
+    //       {
+    //         $match
+    //       },
+    //       {
+    //         $project: {
+    //           password: 0,
+    //           created_at: 0,
+    //           date_of_birth: 0,
+    //           updated_at: 0,
+    //           email_verify_token: 0,
+    //           forgot_password_token: 0
+    //         }
+    //       },
+    //       {
+    //         $skip: limit * (page - 1)
+    //       },
+    //       {
+    //         $limit: limit
+    //       }
+    //     ]).toArray(),
+    //   databaseService.users
+    //     .aggregate([
+    //       {
+    //         $match
+    //       },
+    //       {
+    //         $count: 'total'
+    //       }
+    //     ])
+    //     .toArray()
+    // ])
     return {
-      user,
-      total: total[0]?.total || 0
+      users,
+      // total: total[0]?.total || 0
+      total: 0
     }
   }
 }

@@ -48,7 +48,7 @@ export const searchUserController = async (
   res.json({
     message: USERS_MESSAGES.USER_SEARCH_SUCCESS,
     result: {
-      data: result.user,
+      data: result.users,
       limit,
       page,
       total_page: Math.ceil(result.total / limit)
