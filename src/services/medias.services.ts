@@ -189,6 +189,32 @@ class MediaService {
     )
     return result
   }
+  public async uploadImageTweet(req: Request) {
+    const file = await handleUploadImageCoverPhoto(req)
+    const result: Media[] = await Promise.all(
+      file.map(async (file) => {
+        const newFile = getNameFromFullName(file.newFilename)
+        const newFileName = `${newFile}.jpg`
+        const newPath = path.resolve(UPLOAD_IMAGE_DIR, newFileName)
+        await sharp(file.filepath).jpeg().toFile(newPath)
+        const s3Result = await s3UploadFile({
+          fileName: 'images-tweet/' + newFileName,
+          filePath: newPath,
+          contentType: mime.getType(newPath) as string
+        })
+        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
+        return {
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
+          type: MediaType.Image
+          // url: isProduction
+          //   ? `${envConfig.host}/static/image/${newFileName}`
+          //   : `http://localhost:${envConfig.port}/static/image/${newFileName}`,
+          // type: MediaType.Image
+        }
+      })
+    )
+    return result
+  }
   public async uploadVideo(req: Request) {
     const files = await handleUploadVideo(req)
     const result: Media[] = await Promise.all(

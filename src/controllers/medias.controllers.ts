@@ -34,6 +34,12 @@ export const uploadImageCoverPhotoController = async (req: Request, res: Respons
     result: url
   })
 }
+export const uploadImageTweetController = async (req: Request, res: Response, next: NextFunction) => {
+  const url = await mediaService.uploadImageTweet(req)
+  return res.status(200).json({
+    result: url
+  })
+}
 export const uploadVideoController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediaService.uploadVideo(req)
   return res.status(200).json({

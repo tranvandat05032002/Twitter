@@ -3,6 +3,7 @@ import {
   uploadImageAvatarController,
   uploadImageController,
   uploadImageCoverPhotoController,
+  uploadImageTweetController,
   uploadVideoController,
   uploadVideoHLSController,
   videoStatusController
@@ -28,6 +29,12 @@ mediasRouter.post(
   accessTokenValidator,
   verifiedUserValidator,
   wrapRequestHandler(uploadImageCoverPhotoController)
+)
+mediasRouter.post(
+  '/upload-image/tweet',
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(uploadImageTweetController)
 )
 mediasRouter.post(
   '/upload-video',
