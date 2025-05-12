@@ -104,13 +104,14 @@ const initSocket = (httpServer: ServerHttp) => {
     }
   })
   interface IMessage {
-    payload: {
-      chat_id: string
-      sender_id: string
-      // receiver_id: string
-      text: string
-    }
+    chat_id: string
+    sender_id: string
+    receiver_id: string
+    text: string
   }
+  const messageQueue: {
+    [userId: string]: IMessage[]
+  } = {}
   const users: {
     [key: string]: { socket_id: string }
   } = {}
@@ -146,7 +147,6 @@ const initSocket = (httpServer: ServerHttp) => {
   })
 
   io.on('connection', (socket) => {
-    console.log(`User ${socket.id} connected`)
     const { user_id } = socket.handshake.auth.decoded_authorization as TokenPayload
     users[user_id] = {
       socket_id: socket.id
@@ -173,16 +173,25 @@ const initSocket = (httpServer: ServerHttp) => {
           socketId: socket.id
         })
       }
+
+      users[newUserId] = { socket_id: socket.id }
+      if (messageQueue[newUserId]) {
+        messageQueue[newUserId].forEach((msg) => {
+          io.to(socket.id).emit('receiver_message', msg)
+        })
+        delete messageQueue[newUserId]
+      }
+
       io.emit('get_users', activeUsers)
     })
     // socket.on('send_message', async (data: IMessage) => {
     //   const { chat_id, text, sender_id } = data.payload
     //   const receiver_socket_id = users[receiver_id]?.socket_id
-    //   const conversation = new Conversation({
-    //     sender_id: new ObjectId(sender_id),
-    //     content: content,
-    //     receiver_id: new ObjectId(receiver_id)
-    //   })
+    // const conversation = new Conversation({
+    //   sender_id: new ObjectId(sender_id),
+    //   content: content,
+    //   receiver_id: new ObjectId(receiver_id)
+    // })
     //   const result = await databaseService.conversations.insertOne(conversation)
     //   conversation._id = result.insertedId
     //   if (receiver_socket_id) {
@@ -197,11 +206,25 @@ const initSocket = (httpServer: ServerHttp) => {
       // send all active users to all users
       io.emit("get_users", activeUsers);
     })
-    socket.on('send_message', (data) => {
-      const { receiverId } = data
-      const user = activeUsers.find((user) => user.userId === receiverId)
-      if (user) {
-        io.to(user.socketId).emit('receiver_message', data)
+    socket.on('send_message', async (data: IMessage) => {
+      const { receiver_id, sender_id, text } = data
+      // const receiver_socket_id = users[receiver_id]?.socket_id ?? receiver_id
+      const conversation = new Conversation({
+        sender_id: new ObjectId(sender_id),
+        content: text,
+        receiver_id: new ObjectId(receiver_id)
+      })
+      const result = await databaseService.conversations.insertOne(conversation)
+      conversation._id = result.insertedId
+      const receiver_socket_id = users[receiver_id]?.socket_id
+      if (receiver_socket_id) {
+        io.to(receiver_socket_id).emit('receiver_message', data)
+      } else {
+        // User offline -> push vào hàng đợi
+        if (!messageQueue[receiver_id]) {
+          messageQueue[receiver_id] = []
+        }
+        messageQueue[receiver_id].push(data)
       }
     })
   })

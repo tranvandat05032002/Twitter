@@ -2,7 +2,7 @@
 @baseUrl = http://127.0.0.1:4000
 @email = "tranvandatevondev0503@gmail.com"
 @password = "123123Scss"
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjVhNDM3ZDM3MzllMGFjNmRkMDA1ODUxIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3MTY5NTg4MzAsImV4cCI6MTcxNzA0NTIzMH0.nq0QklkLdqIDiU1Dn9Uns82iUb6f4VZDL1BosNOK8oU
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjdjOTA2MmE3NDNiYmY2MTdiYWUyNzE3IiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3NDYwNjgwMjgsImV4cCI6MTc0NjE1NDQyOH0.NCZeoiGdTvG5aO6AHt3zUQSnTXCHO6k3TpohCx500iw
 #params
 @sender_id_param = 65a437d3739e0ac6dd005851
 @chat_id_param = 6649fcf72194b86f3f4a2a7c
@@ -77,3 +77,6 @@ Authorization: Token {{token_coze}}
   "query": "hello",
   "stream": false
 }
+###
+GET {{baseUrl}}/tweet/owner/all HTTP/1.1
+Authorization: token {{access_token}}

@@ -20,9 +20,10 @@ export const getTweetController = async (req: Request, res: Response) => {
   const result = await tweetService.increaseView(tweet_id, req.decoded_authorization?.user_id as string)
   const tweet = {
     ...req.tweet,
-    guest_views: result.guest_views,
-    user_views: result.user_views,
-    updated_at: result.updated_at
+    guest_views: result?.guest_views,
+    user_views: result?.user_views,
+    updated_at: result?.updated_at,
+    liked: result?.liked
   }
   res.json({
     message: TWEETS_MESSAGES.TWEET_GET_SUCCESS,
@@ -52,6 +53,25 @@ export const getNewFeedsController = async (req: Request<ParamsDictionary, any, 
   const limit = Number(req.query.limit as string)
   const page = Number(req.query.page as string)
   const tweet = await tweetService.getNewFeedTweet({
+    user_id,
+    limit,
+    page
+  })
+  res.json({
+    message: TWEETS_MESSAGES.TWEET_NEW_FEED_GET_SUCCESS,
+    result: {
+      tweet,
+      limit,
+      page,
+      total_page: Math.ceil(tweet.total / limit)
+    }
+  })
+}
+export const getMyTweetController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
+  const user_id = req.decoded_authorization?.user_id as string
+  const limit = Number(req.query.limit as string)
+  const page = Number(req.query.page as string)
+  const tweet = await tweetService.getMyTweet({
     user_id,
     limit,
     page

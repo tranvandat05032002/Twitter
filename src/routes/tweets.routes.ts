@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createTweetController,
+  getMyTweetController,
   getNewFeedsController,
   getTweetChildrenController,
   getTweetController
@@ -29,6 +30,20 @@ tweetRouter.post(
   createTweetValidator,
   wrapRequestHandler(createTweetController)
 )
+/**
+ * Description: Get Tweet of current User
+ * Path: /owner
+ * Method: GET
+ * Header: { Authorization?: Bearer <access_token> }
+ */
+tweetRouter.get(
+  '/owner',
+  paginationValidator,
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getMyTweetController)
+)
+
 /**
  * Description: Get Tweet
  * Path: /:tweet_id
