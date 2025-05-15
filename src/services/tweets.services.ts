@@ -383,12 +383,23 @@ class TweetService {
             }
           },
           {
+            $lookup: {
+              from: 'comments',
+              localField: '_id',
+              foreignField: 'tweet_id',
+              as: 'comments'
+            }
+          },
+          {
             $addFields: {
               bookmarks: {
                 $size: '$bookmarks'
               },
               likes: {
                 $size: '$likes'
+              },
+              comments: {
+                $size: '$comments'
               },
               views: {
                 $add: ['$guest_views', '$user_views']

@@ -11,6 +11,7 @@ import Conversation from '~/models/schemas/Conversation'
 import { envConfig } from '~/constants/config'
 import Chat from '~/models/schemas/Chat.schema'
 import Message from '~/models/schemas/Message.schema'
+import Comment from '~/models/schemas/Comment.shcema'
 const uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
   private client: MongoClient
@@ -120,6 +121,9 @@ class DatabaseService {
   }
   get messages(): Collection<Message> {
     return this.db.collection(envConfig.dbMessageCollection as string)
+  }
+  get comments(): Collection<Comment> {
+    return this.db.collection(envConfig.dbCommentCollection as string)
   }
 }
 const databaseService = new DatabaseService()

@@ -116,3 +116,10 @@ export const CHAT_MESSAGES = {
   GET_USER_CHAT_SUCCESS: 'Get user chat successfully!',
   FIND_CHAT_SUCCESS: 'Find chat successfully!'
 }
+
+export const COMMENT_MESSAGES = {
+  CREATE_COMMENT_SUCCESS: 'Create comment successfully!',
+  GET_COMMENT_SUCCESS: 'Get list comments successfully!',
+  GET_USER_COMMENT_SUCCESS: 'Get user comment successfully!',
+  FIND_COMMENT_SUCCESS: 'Find comment successfully!'
+}

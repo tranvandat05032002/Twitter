@@ -6,8 +6,8 @@ class MessageService {
   public async createMessage({ chat_id, sender_id, text, created_at, updated_at }: { chat_id: string, sender_id: string, text: string, created_at: Date, updated_at: Date }) {
     const result = await databaseService.messages.insertOne(
       new Message({
-        chatId: new ObjectId(chat_id),
-        senderId: new ObjectId(sender_id),
+        chat_id: new ObjectId(chat_id),
+        sender_id: new ObjectId(sender_id),
         text,
         created_at,
         updated_at
@@ -20,7 +20,7 @@ class MessageService {
   }
   public async getMessage(chat_id: string) {
     const messages = await databaseService.messages.find({
-      chatId: new ObjectId(chat_id)
+      chat_id: new ObjectId(chat_id)
     }).toArray()
 
     return messages
