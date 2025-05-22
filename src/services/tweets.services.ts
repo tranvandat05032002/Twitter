@@ -385,8 +385,19 @@ class TweetService {
           {
             $lookup: {
               from: 'comments',
-              localField: '_id',
-              foreignField: 'tweet_id',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$deleted_at', null] }
+                      ]
+                    }
+                  }
+                }
+              ],
               as: 'comments'
             }
           },

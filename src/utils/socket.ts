@@ -226,6 +226,10 @@ const initSocket = (httpServer: ServerHttp) => {
         }
         messageQueue[receiver_id].push(data)
       }
+    }
+    )
+    socket.on('send_comment', async (comment) => {
+      socket.broadcast.emit('receiver_comment', comment)
     })
   })
 }

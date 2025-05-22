@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCommentController, getCommentsController } from "~/controllers/comments.controller";
+import { createCommentController, deleteCommentController, getChildrenCommentController, getCommentsController } from "~/controllers/comments.controller";
 import { accessTokenValidator, verifiedUserValidator } from "~/middlewares/users.middlewares";
 import wrapRequestHandler from "~/utils/handlers";
 
@@ -16,9 +16,24 @@ commentsRouter.post('/', accessTokenValidator, verifiedUserValidator, wrapReques
 
 /**
  * Description: get comments
- * Path: /
+ * Path: /:tweet_id
  * Method: GET
- * Body: {content:string, tweet_id: string, parent_id: string}
  * Header: { Authorization: Bearer <access_token> }
  */
 commentsRouter.get('/:tweet_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(getCommentsController))
+
+/**
+ * Description: get children comment
+ * Path: /reply/:comment_id
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ */
+commentsRouter.get('/reply/:comment_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(getChildrenCommentController))
+
+/**
+ * Description: delete comment
+ * Path: /:comment_id
+ * Method: GET
+ * Header: { Authorization: Bearer <access_token> }
+ */
+commentsRouter.delete('/:comment_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(deleteCommentController))

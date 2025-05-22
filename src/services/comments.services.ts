@@ -21,33 +21,11 @@ class CommentService {
     }
     public async getComments({ tweet_id, limit, page }: { tweet_id: string, limit: number; page: number }) {
         const tweetId = new ObjectId(tweet_id)
-        // const comments = await databaseService.comments.find({
-        //     tweet_id: tweetId,
-        // }).toArray();
-
-        // // Lấy child comment
-        // const commentMap = new Map<string, Comment>();
-        // comments.forEach(comment => {
-        //     (comment as any).replies = [];
-        //     commentMap.set(comment._id.toString(), comment);
-        // });
-        // const parentComments: Comment[] = [];
-        // for (const comment of comments) {
-        //     if (comment.parent_id) {
-        //         const parent = commentMap.get(comment.parent_id.toString())
-        //         if (parent) {
-        //             (parent as any).replies.push(comment)
-        //         }
-        //     } else {
-        //         parentComments.push(comment)
-        //     }
-        // }
-
-        // return parentComments
         const pipelineComment = [
             {
                 $match: {
-                    tweet_id: new ObjectId(tweet_id)
+                    tweet_id: new ObjectId(tweet_id),
+                    deleted_at: null
                 }
             },
             {
@@ -130,7 +108,8 @@ class CommentService {
                 $match: {
                     $and: [
                         {
-                            tweet_id: new ObjectId(tweet_id)
+                            tweet_id: new ObjectId(tweet_id),
+                            delete_at: null
                         },
                         {
                             parent_id: null
@@ -146,12 +125,60 @@ class CommentService {
 
         return { comments, total: total[0]?.total || 0 };
     }
-    // public async findChat(firstId: string, secondId: string) {
-    //     const chat = await databaseService.chats.findOne({
-    //         members: { $all: [new ObjectId(firstId), new ObjectId(secondId)] }
-    //     })
-    //     return chat
-    // }
+    public async getChildComment(comment_id: string) {
+        const parentComment = await databaseService.comments.findOne({
+            _id: new ObjectId(comment_id),
+            deleted_at: undefined
+        });
+
+        if (!parentComment) {
+            return {
+                comments: [],
+                total: 0
+            };
+        }
+
+        const childrenComment = await databaseService.comments.find({
+            parent_id: new ObjectId(comment_id),
+            delete_at: null
+        }).toArray();
+
+
+        return {
+            comments: childrenComment,
+            total: childrenComment?.length || 0
+        }
+    }
+
+    public async deleteComment(comment_id: string) {
+        const now = new Date();
+        const commentObjectId = new ObjectId(comment_id);
+
+        const parentComment = await databaseService.comments.findOne({
+            _id: commentObjectId,
+            deleted_at: undefined
+        });
+
+        if (!parentComment) {
+            return { deletedCount: 0 };
+        }
+
+        const [parentResult, childrenResult] = await Promise.all([
+            databaseService.comments.updateOne(
+                { _id: commentObjectId },
+                { $set: { deleted_at: now } }
+            ),
+            databaseService.comments.updateMany(
+                { parent_id: commentObjectId },
+                { $set: { deleted_at: now } }
+            )
+        ]);
+
+        return {
+            deletedCount: parentResult.modifiedCount + childrenResult.modifiedCount
+        };
+    }
+
 }
 const commentService = new CommentService()
 export default commentService

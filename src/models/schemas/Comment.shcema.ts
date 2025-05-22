@@ -40,6 +40,7 @@ export default class Comment {
                 (this.created_at = date),
                 (this.updated_by = comment.updated_by),
                 (this.updated_at = date),
-                (this.deleted_by = comment.deleted_by)
+                (this.deleted_by = comment.deleted_by),
+                (this.deleted_at = undefined)
     }
 }
