@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCommentController, deleteCommentController, getChildrenCommentController, getCommentsController } from "~/controllers/comments.controller";
+import { createCommentController, deleteCommentController, getChildrenCommentController, getCommentsController, updateCommentController } from "~/controllers/comments.controller";
 import { accessTokenValidator, verifiedUserValidator } from "~/middlewares/users.middlewares";
 import wrapRequestHandler from "~/utils/handlers";
 
@@ -37,3 +37,11 @@ commentsRouter.get('/reply/:comment_id', accessTokenValidator, verifiedUserValid
  * Header: { Authorization: Bearer <access_token> }
  */
 commentsRouter.delete('/:comment_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(deleteCommentController))
+
+/**
+ * Description: update comment
+ * Path: /:comment_id
+ * Method: PUT
+ * Header: { Authorization: Bearer <access_token> }
+ */
+commentsRouter.put('/:comment_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(updateCommentController))

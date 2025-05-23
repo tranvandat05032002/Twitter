@@ -38,8 +38,8 @@ export default class Comment {
                 (this.parent_id = comment.parent_id),
                 (this.created_by = comment.created_by),
                 (this.created_at = date),
-                (this.updated_by = comment.updated_by),
-                (this.updated_at = date),
+                (this.updated_by = undefined),
+                (this.updated_at = undefined),
                 (this.deleted_by = comment.deleted_by),
                 (this.deleted_at = undefined)
     }

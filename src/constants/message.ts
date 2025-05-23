@@ -121,6 +121,7 @@ export const COMMENT_MESSAGES = {
   CREATE_COMMENT_SUCCESS: 'Create comment successfully!',
   GET_COMMENT_SUCCESS: 'Get list comments successfully!',
   DELETE_COMMENT_SUCCESS: 'Delete comments successfully!',
+  UPDATE_COMMENT_SUCCESS: 'Update comments successfully!',
   GET_USER_COMMENT_SUCCESS: 'Get user comment successfully!',
   FIND_COMMENT_SUCCESS: 'Find comment successfully!'
 }

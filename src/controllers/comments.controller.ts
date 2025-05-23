@@ -69,8 +69,28 @@ export const deleteCommentController = async (
         });
     }
 
-
     res.json({
         message,
+    })
+}
+
+export const updateCommentController = async (
+    req: Request<CommentReqParams, any, CommentReqBody>,
+    res: Response,
+    next: NextFunction) => {
+    const { comment_id } = req.params
+    const { content, tweet_id } = req.body
+    const { user_id } = req.decoded_authorization as TokenPayload
+    const result = await commentService.updateComment(user_id, tweet_id, comment_id, content)
+    let message = COMMENT_MESSAGES.UPDATE_COMMENT_SUCCESS
+
+    if (result.modifiedCount === 0) {
+        return res.status(404).json({
+            message: COMMON_MESSAGE.NOT_FOUND
+        })
+    }
+
+    return res.json({
+        message
     })
 } 

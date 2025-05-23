@@ -179,6 +179,24 @@ class CommentService {
         };
     }
 
+    public async updateComment(user_id: string, tweet_id: string, comment_id: string, content: string) {
+        const result = await databaseService.comments.updateOne(
+            {
+                _id: new ObjectId(comment_id),
+                tweet_id: new ObjectId(tweet_id),
+                deleted_at: undefined
+            },
+            {
+                $set: {
+                    content,
+                    updated_at: new Date(),
+                    updated_by: new ObjectId(user_id)
+                }
+            }
+        )
+
+        return result;
+    }
 }
 const commentService = new CommentService()
 export default commentService
