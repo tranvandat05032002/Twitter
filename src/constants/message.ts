@@ -126,6 +126,15 @@ export const COMMENT_MESSAGES = {
   FIND_COMMENT_SUCCESS: 'Find comment successfully!'
 }
 
+export const STORY_MESSAGES = {
+  CREATE_STORY_SUCCESS: 'Create story successfully!',
+  GET_STORY_SUCCESS: 'Get list stories successfully!',
+  DELETE_STORY_SUCCESS: 'Delete story successfully!',
+  UPDATE_STORY_SUCCESS: 'Update story successfully!',
+  GET_USER_STORY_SUCCESS: 'Get user story successfully!',
+  FIND_STORY_SUCCESS: 'Find story successfully!'
+}
+
 export const COMMON_MESSAGE = {
   NOT_FOUND: 'Not found!'
 }

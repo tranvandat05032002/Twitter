@@ -24,16 +24,18 @@ import helmet from 'helmet'
 import { chatsRouter } from './routes/chats.routes'
 import { messagesRouter } from './routes/messages.routes'
 import { commentsRouter } from './routes/comment.routes'
+import storiesRouter from './routes/story.routes'
+import metricsRouter from './routes/metrics.routes'
+import { prometheusMiddleware } from './middlewares/monitors.middleware'
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
 const app = express()
 const httpServer = createServer(app)
-
 const corsOptions: CorsOptions = {
-  // origin: isProduction ? envConfig.clientUrl : 'http://localhost:3000'
   origin: '*'
 }
+app.use(prometheusMiddleware) //prometheus middleware
 app.use(helmet())
 app.use(cors(corsOptions))
 databaseService.connect().then(() => {
@@ -71,7 +73,11 @@ app.use('/conversation', conversationsRouter)
 app.use('/chat', chatsRouter)
 app.use('/message', messagesRouter)
 app.use('/comment', commentsRouter)
+app.use('/story', storiesRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
+
+//Other routes
+app.use('/metrics', metricsRouter)
 app.use(defaultHandleError)
 
 httpServer.listen(PORT, () => {

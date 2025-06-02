@@ -20,7 +20,6 @@ class CommentService {
         return newComment
     }
     public async getComments({ tweet_id, limit, page }: { tweet_id: string, limit: number; page: number }) {
-        const tweetId = new ObjectId(tweet_id)
         const pipelineComment = [
             {
                 $match: {

@@ -12,6 +12,7 @@ import { envConfig } from '~/constants/config'
 import Chat from '~/models/schemas/Chat.schema'
 import Message from '~/models/schemas/Message.schema'
 import Comment from '~/models/schemas/Comment.shcema'
+import Story from '~/models/schemas/Story.schema'
 const uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
   private client: MongoClient
@@ -24,6 +25,18 @@ class DatabaseService {
     try {
       await this.db.command({ ping: 1 })
       console.log('Pinged your deployment. You successfully connected to MongoDB!')
+
+      // Tạo TTL index mongoDB để xóa story hết hạn
+      const exists = await this.stories.indexExists(['expired_at_1'])
+      if (!exists) {
+        await this.stories.createIndex(
+          { expired_at: 1 },
+          {
+            expireAfterSeconds: 0
+          }
+        )
+        console.log('✅ TTL index created on stories.expired_at')
+      }
     } catch (error) {
       console.log(error)
     }
@@ -124,6 +137,9 @@ class DatabaseService {
   }
   get comments(): Collection<Comment> {
     return this.db.collection(envConfig.dbCommentCollection as string)
+  }
+  get stories(): Collection<Story> {
+    return this.db.collection(envConfig.dbStoryCollection as string)
   }
 }
 const databaseService = new DatabaseService()

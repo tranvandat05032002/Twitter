@@ -86,3 +86,23 @@ export const getMyTweetController = async (req: Request<ParamsDictionary, any, a
     }
   })
 }
+
+export const getTweetLikedController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
+  const user_id = req.decoded_authorization?.user_id as string
+  const limit = Number(req.query.limit as string)
+  const page = Number(req.query.page as string)
+  const tweet = await tweetService.getTweetLike({
+    user_id,
+    limit,
+    page
+  })
+  res.json({
+    message: TWEETS_MESSAGES.TWEET_GET_SUCCESS,
+    result: {
+      tweet,
+      limit,
+      page,
+      total_page: Math.ceil(tweet.total / limit)
+    }
+  })
+}

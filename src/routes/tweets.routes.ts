@@ -4,7 +4,8 @@ import {
   getMyTweetController,
   getNewFeedsController,
   getTweetChildrenController,
-  getTweetController
+  getTweetController,
+  getTweetLikedController
 } from '~/controllers/tweets.controller'
 import {
   audienceValidator,
@@ -42,6 +43,20 @@ tweetRouter.get(
   accessTokenValidator,
   verifiedUserValidator,
   wrapRequestHandler(getMyTweetController)
+)
+
+/**
+ * Description: Get Tweet liked
+ * Path: /liked
+ * Method: GET
+ * Header: { Authorization?: Bearer <access_token> }
+ */
+tweetRouter.get(
+  '/liked',
+  paginationValidator,
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getTweetLikedController)
 )
 
 /**

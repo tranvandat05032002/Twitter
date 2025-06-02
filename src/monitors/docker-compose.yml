@@ -1,0 +1,28 @@
+version: "3.4"
+services:
+  prometheus:
+   image: prom/prometheus:latest
+   ports:
+    - 9090:9090
+   command:
+    - --config.file=/etc/prometheus/prometheus.yml
+   volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+   extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+   image: grafana/grafana
+   ports:
+    - 8080:3000
+   volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./:/etc/grafana/dashboards:ro
+   environment:
+      - GF_SECURITY_ADMIN_PASSWORD=35701537Scss
+   restart: always
+   depends_on:
+      - prometheus
+volumes:
+  grafana-storage:
