@@ -3,6 +3,7 @@ import {
   createTweetController,
   getMyTweetController,
   getNewFeedsController,
+  getTweetBookmarkedController,
   getTweetChildrenController,
   getTweetController,
   getTweetLikedController
@@ -57,6 +58,20 @@ tweetRouter.get(
   accessTokenValidator,
   verifiedUserValidator,
   wrapRequestHandler(getTweetLikedController)
+)
+
+/**
+ * Description: Get Tweet bookmarked
+ * Path: /bookmarked
+ * Method: GET
+ * Header: { Authorization?: Bearer <access_token> }
+ */
+tweetRouter.get(
+  '/bookmarked',
+  paginationValidator,
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getTweetBookmarkedController)
 )
 
 /**

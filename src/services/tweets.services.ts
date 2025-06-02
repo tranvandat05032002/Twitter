@@ -368,6 +368,30 @@ class TweetService {
           },
           {
             $lookup: {
+              from: 'bookmarks',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$user_id', user_id_obj] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'bookmarked_docs'
+            }
+          },
+          {
+            $addFields: {
+              bookmarked: { $gt: [{ $size: '$bookmarked_docs' }, 0] }
+            }
+          },
+          {
+            $lookup: {
               from: 'likes',
               localField: '_id',
               foreignField: 'tweet_id',
@@ -478,6 +502,7 @@ class TweetService {
             $project: {
               tweet_children: 0,
               liked_docs: 0,
+              bookmarked_docs: 0,
               user: {
                 password: 0,
                 date_of_birth: 0,
@@ -654,6 +679,30 @@ class TweetService {
               localField: '_id',
               foreignField: 'tweet_id',
               as: 'bookmarks'
+            }
+          },
+          {
+            $lookup: {
+              from: 'bookmarks',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$user_id', user_id_obj] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'bookmarked_docs'
+            }
+          },
+          {
+            $addFields: {
+              bookmarked: { $gt: [{ $size: '$bookmarked_docs' }, 0] }
             }
           },
           {
@@ -1088,6 +1137,230 @@ class TweetService {
 
     return { tweets, total: total[0]?.total || 0 };
   }
+
+  public async getTweetBookmark({
+    user_id,
+    limit,
+    page
+  }: {
+    user_id: string
+    limit: number
+    page: number
+  }) {
+    const user_id_obj = new ObjectId(user_id)
+
+    const pipeline = [
+      {
+        $match: {
+          user_id: user_id_obj
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          tweet_children: 0,
+          'user.password': 0,
+          'user.date_of_birth': 0,
+          'user.email_verify_token': 0,
+          'user.forgot_password_token': 0,
+          'user.twitter_circle': 0
+        }
+      },
+      {
+        $lookup: {
+          from: 'tweets',
+          localField: 'tweet_id',
+          foreignField: '_id',
+          as: 'tweet'
+        }
+      },
+      {
+        $unwind: {
+          path: '$tweet',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: 'hashtags',
+          localField: 'tweet.hashtags',
+          foreignField: '_id',
+          as: 'tweet.hashtags'
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'tweet.mentions',
+          foreignField: '_id',
+          as: 'tweet.mentions'
+        }
+      },
+      {
+        $lookup: {
+          from: 'bookmarks',
+          localField: 'tweet._id',
+          foreignField: 'tweet_id',
+          as: 'tweet.bookmarks'
+        }
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: 'tweet._id',
+          foreignField: 'tweet_id',
+          as: 'tweet.likes'
+        }
+      },
+      {
+        $lookup: {
+          from: 'tweets',
+          localField: 'tweet._id',
+          foreignField: 'parent_id',
+          as: 'tweet_children'
+        }
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: 'tweet._id',
+          foreignField: 'tweet_id',
+          as: 'tweet.comments'
+        }
+      },
+      {
+        $addFields: {
+          'tweet.bookmarks': { $size: '$tweet.bookmarks' },
+          'tweet.likes': { $size: '$tweet.likes' },
+          'tweet.comments': { $size: '$tweet.comments' },
+          'tweet.views': {
+            $add: ['$tweet.guest_views', '$tweet.user_views']
+          },
+          'tweet.retweet_count': {
+            $size: {
+              $filter: {
+                input: '$tweet_children',
+                as: 'tweet',
+                cond: { $eq: ['$$tweet.type', 1] }
+              }
+            }
+          },
+          'tweet.comment_count': {
+            $size: {
+              $filter: {
+                input: '$tweet_children',
+                as: 'tweet',
+                cond: { $eq: ['$$tweet.type', 2] }
+              }
+            }
+          },
+          'tweet.quote_count': {
+            $size: {
+              $filter: {
+                input: '$tweet_children',
+                as: 'tweet',
+                cond: { $eq: ['$$tweet.type', 3] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ['$$ROOT', '$tweet']
+          }
+        }
+      },
+      {
+        $project: {
+          tweet: 0,
+          tweet_children: 0
+        }
+      },
+      {
+        $lookup: {
+          from: 'bookmarks',
+          let: { tweetId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$tweet_id', '$$tweetId'] },
+                    { $eq: ['$user_id', user_id_obj] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'bookmark_docs'
+        }
+      },
+      {
+        $addFields: {
+          bookmark_doc: { $arrayElemAt: ['$bookmark_docs', 0] },
+          bookmark_id: {
+            $cond: [
+              { $ifNull: [{ $arrayElemAt: ['$bookmark_docs._id', 0] }, false] },
+              { $toString: { $arrayElemAt: ['$bookmark_docs._id', 0] } },
+              null
+            ]
+          },
+          bookmarked: { $gt: [{ $size: '$bookmark_docs' }, 0] }
+        }
+      },
+      {
+        $project: {
+          bookmark_doc: 0,
+          bookmark_docs: 0
+        }
+      },
+      {
+        $sort: {
+          created_at: -1
+        }
+      },
+      {
+        $skip: limit * (page - 1)
+      },
+      {
+        $limit: limit
+      }
+    ]
+
+    const [tweets, total] = await Promise.all([
+      databaseService.bookmarks.aggregate(pipeline).toArray(),
+      databaseService.bookmarks
+        .aggregate([
+          {
+            $match: {
+              user_id: user_id_obj
+            }
+          },
+          {
+            $count: 'total'
+          }
+        ])
+        .toArray()
+    ])
+
+    return { tweets, total: total[0]?.total || 0 }
+  }
+
 }
 const tweetService = new TweetService()
 export default tweetService
