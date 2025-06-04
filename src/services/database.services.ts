@@ -13,6 +13,7 @@ import Chat from '~/models/schemas/Chat.schema'
 import Message from '~/models/schemas/Message.schema'
 import Comment from '~/models/schemas/Comment.shcema'
 import Story from '~/models/schemas/Story.schema'
+import Notification from '~/models/schemas/Notification.schema'
 const uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
   private client: MongoClient
@@ -140,6 +141,9 @@ class DatabaseService {
   }
   get stories(): Collection<Story> {
     return this.db.collection(envConfig.dbStoryCollection as string)
+  }
+  get notifications(): Collection<Notification> {
+    return this.db.collection(envConfig.dbNotifycationCollection as string)
   }
 }
 const databaseService = new DatabaseService()

@@ -37,6 +37,7 @@ export const envConfig = {
   dbVideoStatusCollection: process.env.DB_VIDEO_STATUS_COLLECTION as string,
   dbConversationCollection: process.env.DB_CONVERSATION_COLLECTION as string,
   dbChatCollection: process.env.DB_CHAT_COLLECTION as string,
+  dbNotifycationCollection: process.env.DB_NOTIFICATION_COLLECTION as string,
   dbMessageCollection: process.env.DB_MESSAGE_COLLECTION as string,
   dbCommentCollection: process.env.DB_COMMENT_COLLECTION as string,
   dbStoryCollection: process.env.DB_STORY_COLLECTION as string,

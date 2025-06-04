@@ -651,7 +651,6 @@ class UsersService {
                 'followUsers.forgot_password_token': 0,
                 'followUsers.created_at': 0,
                 'followUsers.updated_at': 0,
-                'followUsers._id': 0
               }
             }
           ]
