@@ -535,7 +535,7 @@ class UsersService {
 
     return user.value
   }
-  public async getProfile(username: string) {
+  public async getProfile(username: string, currentUserId: string) {
     const user = await databaseService.users.findOne(
       {
         username
@@ -549,13 +549,24 @@ class UsersService {
         }
       }
     )
+
     if (user === null) {
       throw new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
-    return user
+
+    // Kiểm tra xem currentUser có theo dõi user này không
+    const isFollowing = await databaseService.followers.findOne({
+      user_id: new ObjectId(currentUserId),
+      followed_user_id: user._id
+    })
+
+    return {
+      ...user,
+      is_following: Boolean(isFollowing)
+    }
   }
   public async getProfileUserId(userId: string) {
     const user = await databaseService.users.findOne(

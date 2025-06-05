@@ -1,12 +1,14 @@
 import { Router } from 'express'
 import {
   createTweetController,
+  deleteTweetController,
   getMyTweetController,
   getNewFeedsController,
   getTweetBookmarkedController,
   getTweetChildrenController,
   getTweetController,
-  getTweetLikedController
+  getTweetLikedController,
+  getUserTweetController
 } from '~/controllers/tweets.controller'
 import {
   audienceValidator,
@@ -44,6 +46,20 @@ tweetRouter.get(
   accessTokenValidator,
   verifiedUserValidator,
   wrapRequestHandler(getMyTweetController)
+)
+
+/**
+ * Description: Get Tweet for user
+ * Path: /user
+ * Method: GET
+ * Header: { Authorization?: Bearer <access_token> }
+ */
+tweetRouter.get(
+  '/user/:user_id',
+  paginationValidator,
+  accessTokenValidator,
+  verifiedUserValidator,
+  wrapRequestHandler(getUserTweetController)
 )
 
 /**
@@ -120,3 +136,11 @@ tweetRouter.get(
   verifiedUserValidator,
   wrapRequestHandler(getNewFeedsController)
 )
+
+/**
+* Description: Delete tweet
+ * Path: /
+ * Method: DELETE
+ * Header: { Authorization: Bearer <access_token> }
+ */
+tweetRouter.delete('/:tweet_id', accessTokenValidator, verifiedUserValidator, wrapRequestHandler(deleteTweetController))

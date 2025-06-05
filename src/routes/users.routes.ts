@@ -200,7 +200,7 @@ usersRouter.patch(
  * Path: /:username
  * Method: GET
  */
-usersRouter.get('/:username', wrapRequestHandler(getProfileController))
+usersRouter.get('/:username', accessTokenValidator, wrapRequestHandler(getProfileController))
 usersRouter.get('/v1/:userId', wrapRequestHandler(getProfileIdController))
 
 /**

@@ -67,12 +67,47 @@ export const getNewFeedsController = async (req: Request<ParamsDictionary, any, 
     }
   })
 }
+
+export const deleteTweetController = async (
+  req: Request<TweetParams, any, any>,
+  res: Response,
+) => {
+  const { tweet_id } = req.params
+  await tweetService.deleteTweet(tweet_id)
+  let message = TWEETS_MESSAGES.TWEET_DELETE_SUCCESS
+  res.json({
+    message,
+  })
+}
+
 export const getMyTweetController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
   const user_id = req.decoded_authorization?.user_id as string
   const limit = Number(req.query.limit as string)
   const page = Number(req.query.page as string)
   const tweet = await tweetService.getMyTweet({
     user_id,
+    limit,
+    page
+  })
+  res.json({
+    message: TWEETS_MESSAGES.TWEET_NEW_FEED_GET_SUCCESS,
+    result: {
+      tweet,
+      limit,
+      page,
+      total_page: Math.ceil(tweet.total / limit)
+    }
+  })
+}
+
+export const getUserTweetController = async (req: Request<ParamsDictionary, any, any, Pagination>, res: Response) => {
+  const { user_id } = req.params
+  const limit = Number(req.query.limit as string)
+  const current_user_id = req.decoded_authorization?.user_id as string
+  const page = Number(req.query.page as string)
+  const tweet = await tweetService.getTweetsFromOtherUsers({
+    user_id: user_id,
+    current_user_id: current_user_id,
     limit,
     page
   })

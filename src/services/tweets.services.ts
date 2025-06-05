@@ -878,6 +878,267 @@ class TweetService {
 
     return { tweets, total: total[0]?.total || 0 };
   }
+
+  public async getTweetsFromOtherUsers({ current_user_id, user_id, limit, page }: { current_user_id: string; user_id: string, limit: number; page: number }) {
+    const currentUserObjectId = new ObjectId(current_user_id);
+    const userIdObjectId = new ObjectId(user_id);
+
+    const [tweets, total] = await Promise.all([
+      databaseService.tweets
+        .aggregate([
+          {
+            $match: {
+              user_id: userIdObjectId
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'user_id',
+              foreignField: '_id',
+              as: 'user'
+            }
+          },
+          {
+            $unwind: {
+              path: '$user'
+            }
+          },
+          {
+            $match: {
+              audience: { $in: [0, 1] }
+            }
+          },
+          {
+            $sort: {
+              created_at: -1
+            }
+          },
+          {
+            $skip: limit * (page - 1)
+          },
+          {
+            $limit: limit
+          },
+          {
+            $lookup: {
+              from: 'hashtags',
+              localField: 'hashtags',
+              foreignField: '_id',
+              as: 'hashtags'
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'mentions',
+              foreignField: '_id',
+              as: 'mentions'
+            }
+          },
+          {
+            $addFields: {
+              hashtags: {
+                $map: {
+                  input: '$hashtags',
+                  as: 'tag',
+                  in: {
+                    _id: '$$tag._id',
+                    name: '$$tag.name'
+                  }
+                }
+              }
+            }
+          },
+          {
+            $lookup: {
+              from: 'bookmarks',
+              localField: '_id',
+              foreignField: 'tweet_id',
+              as: 'bookmarks'
+            }
+          },
+          {
+            $lookup: {
+              from: 'bookmarks',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$user_id', currentUserObjectId] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'bookmarked_docs'
+            }
+          },
+          {
+            $addFields: {
+              bookmarked: { $gt: [{ $size: '$bookmarked_docs' }, 0] }
+            }
+          },
+          {
+            $lookup: {
+              from: 'likes',
+              localField: '_id',
+              foreignField: 'tweet_id',
+              as: 'likes'
+            }
+          },
+          {
+            $lookup: {
+              from: 'tweets',
+              localField: '_id',
+              foreignField: 'parent_id',
+              as: 'tweet_children'
+            }
+          },
+          {
+            $lookup: {
+              from: 'comments',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$deleted_at', null] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'comments'
+            }
+          },
+          {
+            $addFields: {
+              bookmarks: {
+                $size: '$bookmarks'
+              },
+              likes: {
+                $size: '$likes'
+              },
+              comments: {
+                $size: '$comments'
+              },
+              views: {
+                $add: ['$guest_views', '$user_views']
+              },
+              retweet_count: {
+                $size: {
+                  $filter: {
+                    input: '$tweet_children',
+                    as: 'tweet',
+                    cond: {
+                      $eq: ['$$tweet.type', TweetType.Retweet]
+                    }
+                  }
+                }
+              },
+              comment_count: {
+                $size: {
+                  $filter: {
+                    input: '$tweet_children',
+                    as: 'tweet',
+                    cond: {
+                      $eq: ['$$tweet.type', TweetType.Comment]
+                    }
+                  }
+                }
+              },
+              quote_count: {
+                $size: {
+                  $filter: {
+                    input: '$tweet_children',
+                    as: 'tweet',
+                    cond: {
+                      $eq: ['$$tweet.type', TweetType.QuoteTweet]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            $lookup: {
+              from: 'likes',
+              let: { tweetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$tweet_id', '$$tweetId'] },
+                        { $eq: ['$user_id', currentUserObjectId] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'liked_docs'
+            }
+          },
+          {
+            $addFields: {
+              liked: { $gt: [{ $size: '$liked_docs' }, 0] }
+            }
+          },
+          {
+            $project: {
+              tweet_children: 0,
+              liked_docs: 0,
+              bookmarked_docs: 0,
+              user: {
+                password: 0,
+                date_of_birth: 0,
+                email_verify_token: 0,
+                forgot_password_token: 0,
+                twitter_circle: 0
+              }
+            }
+          }
+        ])
+        .toArray(),
+
+      databaseService.tweets
+        .aggregate([
+          {
+            $match: {
+              user_id: currentUserObjectId
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'user_id',
+              foreignField: '_id',
+              as: 'user'
+            }
+          },
+          { $unwind: '$user' },
+          {
+            $match: {
+              audience: { $in: [0, 1] }
+            }
+          },
+          { $count: 'total' }
+        ])
+        .toArray()
+    ])
+
+    return {
+      tweets,
+      total: total[0]?.total || 0
+    };
+  }
+
   public async getTweetLike({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
     const user_id_obj = new ObjectId(user_id);
 
@@ -1359,6 +1620,31 @@ class TweetService {
     ])
 
     return { tweets, total: total[0]?.total || 0 }
+  }
+
+  public async deleteTweet(tweet_id: string) {
+    const now = new Date();
+    const tweetId = new ObjectId(tweet_id);
+
+    const tweet = await databaseService.tweets.findOne({
+      _id: tweetId,
+    });
+
+    if (!tweet) {
+      return { deletedCount: 0 };
+    }
+
+    const [deleteTweetResult, deleteLikesResult, deleteCommentsResult] = await Promise.all([
+      databaseService.tweets.deleteOne({ _id: tweetId }),
+      databaseService.likes.deleteMany({ tweet_id: tweetId }),
+      databaseService.comments.deleteMany({ tweet_id: tweetId }),
+    ]);
+
+    return {
+      deletedCount: deleteTweetResult.deletedCount,
+      deletedLikes: deleteLikesResult.deletedCount,
+      deletedComments: deleteCommentsResult.deletedCount,
+    };
   }
 
 }
