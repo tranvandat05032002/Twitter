@@ -28,6 +28,7 @@ import storiesRouter from './routes/story.routes'
 import metricsRouter from './routes/metrics.routes'
 import { prometheusMiddleware } from './middlewares/monitors.middleware'
 import initSocket from './sockets/init'
+import { notificationsRouter } from './routes/notifications.routes'
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
@@ -75,6 +76,7 @@ app.use('/chat', chatsRouter)
 app.use('/message', messagesRouter)
 app.use('/comment', commentsRouter)
 app.use('/story', storiesRouter)
+app.use('/notifications', notificationsRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
 
 //Other routes

@@ -12,14 +12,20 @@ export const registerUserHandlers = (io: Server, socket: Socket, activeUsers: Ma
     const sendUnsentNotifications = async () => {
         const unreadNotifications = await notifyService.getUnsentNotifications(userId)
         for (const notification of unreadNotifications) {
-            console.log("notifi off ---> ", notification)
             socket.emit('receiver_notification', notification)
             await notifyService.markAsSentNotify(notification._id)
         }
+
+        const unreadCount = await notifyService.countUnreadNotifications(userId)
+        socket.emit('notify:update', {
+            unread_count: unreadCount
+        })
     }
+
     sendUnsentNotifications()
 
     socket.on('disconnect', () => {
+        console.log("Running disconect")
         activeUsers.delete(userId)
         io.emit('get_users', Array.from(activeUsers.entries()).map(([userId, socketId]) => ({ userId, socketId })))
     })
