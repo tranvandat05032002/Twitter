@@ -694,6 +694,15 @@ class UsersService {
       message: USERS_MESSAGES.CHANGE_PASSWORD_SUCCESS
     }
   }
+
+  public async updateLastSeen(user_id: string, last_online: string) {
+    return await databaseService.users.findOneAndUpdate(
+      {
+        _id: new ObjectId(user_id)
+      },
+      { $set: { last_online: new Date(last_online) } }
+    );
+  }
 }
 
 const usersService = new UsersService()

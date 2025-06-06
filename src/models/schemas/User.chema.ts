@@ -20,6 +20,7 @@ export interface IUser {
   username?: string
   avatar?: string
   cover_photo?: string
+  last_online?: Date | null
 }
 
 export default class User {
@@ -41,6 +42,7 @@ export default class User {
   username: string
   avatar: string
   cover_photo: string
+  last_online?: Date | null
 
   constructor(user: IUser) {
     const date = new Date()
@@ -61,5 +63,6 @@ export default class User {
     this.username = user.username || ''
     this.avatar = user.avatar || ''
     this.cover_photo = user.cover_photo || ''
+    this.last_online = user.last_online ?? null
   }
 }

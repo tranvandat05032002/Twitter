@@ -3,6 +3,7 @@ import { Server as ServerHttp } from 'http'
 import { Server } from 'socket.io'
 import { envConfig } from '~/constants/config'
 import { socketAuthMiddleware } from '~/middlewares/socket.middleware'
+import { registerCallHandlers } from './handlers/call.handler'
 import { registerCommentHandlers } from './handlers/comment.handler'
 import { registerMessageHandlers } from './handlers/message.handler'
 import { registerNotifyHandlers } from './handlers/notify.handler'
@@ -24,6 +25,7 @@ const initSocket = (httpServer: ServerHttp) => {
         registerMessageHandlers(io, socket)
         registerCommentHandlers(io, socket)
         registerNotifyHandlers(io, socket, activeUsers)
+        registerCallHandlers(io, socket)
     })
 }
 
