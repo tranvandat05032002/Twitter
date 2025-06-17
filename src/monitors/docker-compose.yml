@@ -10,6 +10,8 @@ services:
     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
    extra_hosts:
       - "host.docker.internal:host-gateway"
+   networks:
+      - meteor-social
 
   grafana:
    image: grafana/grafana
@@ -24,5 +26,10 @@ services:
    restart: always
    depends_on:
       - prometheus
+   networks:
+      - meteor-social
 volumes:
   grafana-storage:
+networks:
+  meteor-social:
+    external: true

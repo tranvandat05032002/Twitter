@@ -3,23 +3,27 @@ import { Server, Socket } from "socket.io"
 export const registerCallHandlers = (io: Server, socket: Socket) => {
     const userId = socket.data.user.user_id.toString()
 
-    socket.on('call-user', ({ toUserId, offer }) => {
-        io.to(toUserId).emit('call-made', {
-            from: userId,
-            offer
+    // Khi có người gọi
+    socket.on('call-user', ({ userrToCall, signalData, from }) => {
+        console.log("userrToCall ---> ", userrToCall)
+        console.log("signalData ---> ", signalData)
+        console.log("from ---> ", from)
+        io.to(userrToCall).emit('call-made', {
+            signal: signalData,
+            from,
         })
     })
 
-    socket.on('make-answer', ({ toUserId, answer }) => {
-        io.to(toUserId).emit('answer-made', {
-            from: userId,
-            answer
+    // Khi người nhận trả lời
+    socket.on('answer-call', ({ to, signal }) => {
+        io.to(to).emit('call-accepted', {
+            signal
         })
     })
 
-    socket.on('ice-candidate', ({ toUserId, candidate }) => {
-        io.to(toUserId).emit('ice-candidate', {
-            from: userId,
+    // Trao đổi ICE candidates
+    socket.on('ice-candidate', ({ to, candidate }) => {
+        io.to(to).emit('ice-candidate', {
             candidate
         })
     })
