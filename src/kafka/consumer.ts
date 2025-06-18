@@ -1,5 +1,6 @@
 import { Consumer } from "kafkajs";
 import { redisKey } from "~/utils/cacheKey";
+import { getCache } from "~/utils/redisRead";
 import { setCache } from "~/utils/redisWrite";
 import { kafka } from "./index";
 
@@ -31,10 +32,27 @@ export async function startConsumer() {
             try {
                 if (!message.value) return;
                 const { user_id, data } = JSON.parse(message.value.toString());
+                const oldCache = await getCache(redisKey.userMe(user_id));
+
+                const cleanedOld = removeFields(oldCache, ['updated_at', 'last_online']);
+                const cleanedNew = removeFields(data, ['updated_at', 'last_online']);
+
+                const isSame = JSON.stringify(cleanedOld) === JSON.stringify(cleanedNew);
+
+                if (isSame) {
+                    return;
+                }
+
                 await setCache(redisKey.userMe(user_id), data, 600);
             } catch (error) {
                 console.error('❌ Failed to process message:', error);
             }
         }
     });
+}
+
+function removeFields(obj: any, fields: string[]) {
+    const result = { ...obj };
+    for (const f of fields) delete result[f];
+    return result;
 }
