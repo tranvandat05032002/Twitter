@@ -29,6 +29,8 @@ import metricsRouter from './routes/metrics.routes'
 import { prometheusMiddleware } from './middlewares/monitors.middleware'
 import initSocket from './sockets/init'
 import { notificationsRouter } from './routes/notifications.routes'
+import { connectProducer } from './kafka/producer';
+import { startConsumer } from './kafka/consumer';
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
@@ -86,3 +88,11 @@ app.use(defaultHandleError)
 httpServer.listen(PORT, () => {
   console.log(`Server running at http://${DOMAIN}:${PORT}/`)
 })
+
+async function bootstrap() {
+  await connectProducer();
+  await startConsumer();
+  console.log('✅ Kafka Producer & Consumer started!');
+}
+
+bootstrap();

@@ -19,6 +19,10 @@ import axios from 'axios'
 import { sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
 import { envConfig } from '~/constants/config'
 import { sendVerifyResetPasswordEmail } from '~/utils/otp'
+import { redisKey } from '~/utils/cacheKey'
+import { getCache } from '~/utils/redisRead'
+import { setCache } from '~/utils/redisWrite'
+import { publishUserUpdated } from '~/kafka/users.publish'
 
 interface INodeMailer {
   from?: string
@@ -491,6 +495,16 @@ class UsersService {
     }
   }
   public async getMe(user_id: string) {
+    // Lấy thông tin của người đăng nhập hiện tại từ cache
+    const cacheKey = redisKey.userMe(user_id)
+    const userCached = await getCache<{ user: any }>(cacheKey)
+    if (userCached) {
+      return {
+        user: userCached
+      }
+    }
+
+    // Lấy thông tin user từ DB nếu không có trong cache
     const user = await databaseService.users.findOne(
       {
         _id: new ObjectId(user_id)
@@ -503,6 +517,16 @@ class UsersService {
         }
       }
     )
+
+    // Cập nhật cho cache
+    if (!user) {
+      // Tránh spam khi user không có và hit DB liên tục
+      await setCache(redisKey.userMe(user_id), 60)
+      return {
+        user: null
+      }
+    }
+    await setCache(redisKey.userMe(user_id), user, 600)
     return {
       user
     }
@@ -533,7 +557,15 @@ class UsersService {
       }
     )
 
-    return user.value
+    const updateUser = user.value
+    if (updateUser) {
+      await publishUserUpdated({
+        user_id,
+        userData: updateUser
+      })
+    }
+
+    return updateUser
   }
   public async getProfile(username: string, currentUserId: string) {
     const user = await databaseService.users.findOne(

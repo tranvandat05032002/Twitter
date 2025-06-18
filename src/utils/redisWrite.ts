@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 
 // Kết nối ghi vào master
 const redis = new Redis({
-    host: 'redis-master',
+    host: 'localhost',
     port: 6379,
 });
 

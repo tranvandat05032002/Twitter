@@ -2,8 +2,8 @@ import Redis from 'ioredis';
 
 // Kết nối đọc từ slave
 const redis = new Redis({
-    host: 'redis-slave',
-    port: 6379,
+    host: 'localhost',
+    port: 6479,
 });
 
 export async function getCache<T = any>(key: string): Promise<T | null> {
