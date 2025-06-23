@@ -3,6 +3,7 @@ import { redisKey } from "~/utils/cacheKey";
 import { getCache } from "~/utils/redisRead";
 import { setCache } from "~/utils/redisWrite";
 import { kafka } from "./index";
+import lodash from "lodash"
 
 const consumer = kafka.consumer({ groupId: 'cache-group' });
 
@@ -28,22 +29,42 @@ export async function startConsumer() {
     await consumer.subscribe({ topic: 'user-updated', fromBeginning: false });
 
     await consumer.run({
-        eachMessage: async ({ topic, message }) => {
+        autoCommit: false,
+        eachMessage: async ({ topic, partition, message, heartbeat }) => {
             try {
                 if (!message.value) return;
                 const { user_id, data } = JSON.parse(message.value.toString());
+
+                await heartbeat()   // Giữ kết nối broker khi timeout hoặc crash
+
+                const processedAt = await getCache(redisKey.userMeUpdated(user_id));
+                if (processedAt === data.updated_at) {
+                    return;
+                }
+
                 const oldCache = await getCache(redisKey.userMe(user_id));
 
                 const cleanedOld = removeFields(oldCache, ['updated_at', 'last_online']);
                 const cleanedNew = removeFields(data, ['updated_at', 'last_online']);
 
-                const isSame = JSON.stringify(cleanedOld) === JSON.stringify(cleanedNew);
+                const isSame = lodash.isEqual(cleanedOld, cleanedNew);
 
                 if (isSame) {
                     return;
                 }
 
-                await setCache(redisKey.userMe(user_id), data, 600);
+                await setCache(redisKey.userMe(user_id), data, 60 * 60 * 24); // TTL: 1 ngày
+                await setCache(redisKey.userMeUpdated(user_id), data.updated_at, 60 * 60 * 24 * 3); // TTL: 3 ngày
+
+                // Commit offset sau khi hoàn thành
+                await consumer.commitOffsets([
+                    {
+                        topic,
+                        partition,
+                        offset: (Number(message.offset) + 1).toString()
+                    }
+                ]);
+
             } catch (error) {
                 console.error('❌ Failed to process message:', error);
             }
