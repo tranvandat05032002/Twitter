@@ -5,7 +5,17 @@ import { setCache } from "~/utils/redisWrite";
 import { kafka } from "./index";
 import lodash from "lodash"
 
-const consumer = kafka.consumer({ groupId: 'cache-group' });
+const consumer = kafka.consumer({
+    groupId: 'cache-group',
+    sessionTimeout: 30000,
+    heartbeatInterval: 3000,
+    retry: {
+        retries: 5,
+        initialRetryTime: 500,
+        multiplier: 2,
+        maxRetryTime: 60000
+    }
+});
 
 async function retryConnect(consumer: Consumer, retries = 5) {
     let attempt = 0;
