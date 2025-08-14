@@ -1,9 +1,16 @@
 import { ParamsDictionary, Query } from "express-serve-static-core"
 import { Pagination } from "./Tweet.request"
+export enum MessageType {
+  Text = 1, // text
+  Media, // media: image, file
+  Voice, // voice
+  Map
+}
 export interface MessageReqBody {
   chat_id: string
   sender_id: string
   text: string
+  type: MessageType
   created_at: Date
   updated_at: Date
 }

@@ -28,7 +28,6 @@ export const registerUserHandlers = (io: Server, socket: Socket, activeUsers: Ma
 
     socket.on('disconnect', async () => {
         activeUsers.delete(userId)
-        console.log("running disconnect")
         const lastOnline = new Date().toISOString()
         await usersService.updateLastSeen(userId, lastOnline)
 

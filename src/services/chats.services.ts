@@ -7,9 +7,6 @@ class ChatService {
     const senderObjectId = new ObjectId(sender_id);
     const receiverObjectId = new ObjectId(receiver_id);
 
-    console.log(senderObjectId)
-    console.log(receiverObjectId)
-
     const existingChat = await databaseService.chats.findOne({
       members: {
         $all: [senderObjectId, receiverObjectId],

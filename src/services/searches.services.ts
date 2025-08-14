@@ -295,118 +295,74 @@ class SearchService {
     people_follow?: PeopleFollowType
     user_id: string
   }) {
-    const $match: any = {
-      _id: {
-        $ne: new ObjectId(user_id)
-      },
-      $text: {
-        $search: name
-      }
-    }
-    // if (people_follow && people_follow === PeopleFollowType.Following) {
-    //   const user_id_obj = new ObjectId(user_id)
-    //   const followed_user_ids = await databaseService.followers
-    //     .find(
-    //       {
-    //         user_id: user_id_obj
-    //       },
-    //       {
-    //         projection: {
-    //           followed_user_id: 1,
-    //           _id: 0
-    //         }
-    //       }
-    //     )
-    //     .toArray()
-    //   const ids = followed_user_ids.map((item) => item.followed_user_id)
-    //   ids.push(user_id_obj)
-    //   $match['user_id'] = {
-    //     $in: ids
-    //   }
-    // }
-
     const user_id_obj = new ObjectId(user_id)
-    const users = await databaseService.users.aggregate(
-      [
-        {
-          $match
-        },
-        {
-          $lookup: {
-            from: "followers",
-            let: { userId: "$_id" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ["$user_id", new ObjectId(user_id)] }, // User hiện tại follow
-                      { $eq: ["$followed_user_id", "$$userId"] } // So với user trong danh sách
-                    ]
-                  }
+
+    const $match: any = {
+      _id: { $ne: user_id_obj }
+    }
+
+    if (name) {
+      $match.$text = { $search: name }
+    }
+
+    // Pipeline dùng chung cho cả truy vấn user và đếm
+    const basePipeline: any[] = [
+      { $match },
+      {
+        $lookup: {
+          from: "followers",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$user_id", user_id_obj] },
+                    { $eq: ["$followed_user_id", "$$userId"] }
+                  ]
                 }
               }
-            ],
-            as: "following_status"
-          }
-        },
-        {
-          $addFields: {
-            is_following: { $gt: [{ $size: "$following_status" }, 0] }
-          }
-        },
-        {
-          $project: {
-            following_status: 0,
-            password: 0,
-            email_verify_token: 0,
-            forgot_password_token: 0
-          }
-        },
-        {
-          $sort: { name: 1 }
+            }
+          ],
+          as: "following_status"
         }
-      ]
-    ).toArray()
+      },
+      {
+        $addFields: {
+          is_following: { $gt: [{ $size: "$following_status" }, 0] }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          following_status: 0
+        }
+      }
+    ]
 
-    // const [user, total] = await Promise.all([
-    //   databaseService.users
-    //     .aggregate([
-    //       {
-    //         $match
-    //       },
-    //       {
-    //         $project: {
-    //           password: 0,
-    //           created_at: 0,
-    //           date_of_birth: 0,
-    //           updated_at: 0,
-    //           email_verify_token: 0,
-    //           forgot_password_token: 0
-    //         }
-    //       },
-    //       {
-    //         $skip: limit * (page - 1)
-    //       },
-    //       {
-    //         $limit: limit
-    //       }
-    //     ]).toArray(),
-    //   databaseService.users
-    //     .aggregate([
-    //       {
-    //         $match
-    //       },
-    //       {
-    //         $count: 'total'
-    //       }
-    //     ])
-    //     .toArray()
-    // ])
+    // Thêm sort và phân trang vào bản truy vấn dữ liệu
+    const userPipeline = [
+      ...basePipeline,
+      { $sort: { name: 1 } },
+      { $skip: limit * (page - 1) },
+      { $limit: limit }
+    ]
+
+    // Pipeline để count tổng số
+    const countPipeline = [...basePipeline, { $count: "total" }]
+
+    const [users, totalResult] = await Promise.all([
+      databaseService.users.aggregate(userPipeline).toArray(),
+      databaseService.users.aggregate(countPipeline).toArray()
+    ])
+
+    const total = totalResult[0]?.total || 0
+
     return {
       users,
-      // total: total[0]?.total || 0
-      total: 0
+      total
     }
   }
 }

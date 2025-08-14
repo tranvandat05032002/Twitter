@@ -43,7 +43,7 @@ export async function startConsumer() {
         eachMessage: async ({ topic, partition, message, heartbeat }) => {
             try {
                 if (!message.value) return;
-                const { user_id, data } = JSON.parse(message.value.toString());
+                const { user_id, username, data } = JSON.parse(message.value.toString());
 
                 await heartbeat()   // Giữ kết nối broker khi timeout hoặc crash
 
@@ -62,9 +62,12 @@ export async function startConsumer() {
                 if (isSame) {
                     return;
                 }
-
-                await setCache(redisKey.userMe(user_id), data, 60 * 60 * 24); // TTL: 1 ngày
-                await setCache(redisKey.userMeUpdated(user_id), data.updated_at, 60 * 60 * 24 * 3); // TTL: 3 ngày
+                const promiseCache = [
+                    setCache(redisKey.userMe(user_id), data, 60 * 60 * 24), // TTL: 1 ngày
+                    setCache(redisKey.userProfile(data.username), data, 60 * 60 * 24), // TTL: 1 ngày
+                    setCache(redisKey.userMeUpdated(user_id), data.updated_at, 60 * 60 * 24 * 3) // TTL: 3 ngày    
+                ]
+                await Promise.all(promiseCache)
 
                 // Commit offset sau khi hoàn thành
                 await consumer.commitOffsets([

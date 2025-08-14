@@ -111,3 +111,30 @@ export const ServeVideoStreamingController = (req: Request, res: Response, next:
   const videoStream = fs.createReadStream(videoPath, { start, end })
   videoStream.pipe(res)
 }
+
+// voice
+interface VoiceResponse {
+  url: string;
+  duration: number;
+  codec: string;
+}
+
+export const uploadVoiceController = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { file } = req
+    if (!file) return res.status(400).json({
+      status: 'error',
+      message: 'Không tìm thấy file'
+    });
+
+    const inputPath = file.path;
+    const { duration, url, codec } = await mediaService.uploadVoiceFile(inputPath);
+    return res.json({
+      message: "Creaet voice success!",
+      result: { url, duration, codec }
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: "Upload failed" });
+  }
+}

@@ -14,6 +14,15 @@ import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import { s3UploadFile } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 import { rimrafSync } from 'rimraf'
+import { execFile } from "child_process";
+import ffmpegPath from "ffmpeg-static"; // Sử dụng ffmpeg-static thay vì fluent-ffmpeg
+import ffprobePath from "@ffprobe-installer/ffprobe";
+
+interface UploadVoiceResponse {
+  url: string;
+  duration: number;
+  codec: string;
+}
 
 class Queue {
   items: string[]
@@ -261,6 +270,70 @@ class MediaService {
     })
     return data
   }
+
+  // voice
+  public async uploadVoiceFile(inputPath: string) {
+    try {
+      // Lấy duration của file
+      const duration = await probeDuration(inputPath);
+
+      // Tạo tên file đầu ra và đường dẫn
+      const outName = path.basename(inputPath, ".webm") + ".m4a";
+      const outPath = path.join(path.dirname(inputPath), outName);
+
+      // Chuyển đổi tệp âm thanh sang m4a
+      await convertToM4A(inputPath, outPath);
+
+      // Trả về URL file và thông tin liên quan
+      const url = `http://localhost:4000/static/voice/${outName}`;
+      return { url, duration, codec: "m4a" };
+    } catch (error) {
+      console.error("Error uploading or processing voice file:", error);
+      throw new Error("Error processing the voice file.");
+    }
+  }
 }
+
+// Hàm lấy duration của file âm thanh
+function probeDuration(filePath: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const ffprobeExecutablePath = ffprobePath.path
+    execFile(ffprobeExecutablePath, ["-v", "quiet", "-print_format", "json", "-show_format", filePath], (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Error probing file duration: ${stderr}`);
+        return reject(err);
+      }
+      try {
+        const data = JSON.parse(stdout);
+        const duration = parseFloat(data.format.duration);
+        resolve(Math.round(duration)); // Giây
+      } catch (error) {
+        console.error("Error parsing ffprobe output:", error);
+        reject(error);
+      }
+    });
+  });
+}
+
+// Hàm chuyển đổi file từ webm sang m4a (AAC)
+function convertToM4A(input: string, output: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!ffmpegPath) {
+      console.error("ffmpegPath is null or undefined. Cannot proceed with conversion.");
+      return reject(new Error("ffmpegPath is null or undefined"));
+    }
+
+    // Nếu ffmpegPath không phải là null, gọi execFile với ffmpegPath
+    execFile(ffmpegPath, ["-i", input, "-c:a", "aac", "-f", "ipod", output], (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Error converting file: ${stderr}`);
+        return reject(err);
+      }
+      console.log(`Conversion complete: ${stdout}`);
+      resolve();
+    });
+  });
+}
+
 const mediaService = new MediaService()
 export default mediaService

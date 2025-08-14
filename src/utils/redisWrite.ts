@@ -1,9 +1,10 @@
 import Redis from 'ioredis';
+import { getRedisMaster } from './yaml';
 
 // Kết nối ghi vào master
 const redis = new Redis({
-    host: 'localhost',
-    port: 6379,
+    host: getRedisMaster()?.host,
+    port: getRedisMaster()?.port,
 });
 
 // Ghi cache

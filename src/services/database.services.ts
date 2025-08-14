@@ -43,19 +43,33 @@ class DatabaseService {
     }
   }
   async indexUser() {
-    const exists = await this.users.indexExists(['email_1', 'email_1_password_1', 'username_1', 'name_text'])
-    if (!exists) {
-      this.users.createIndex({
-        email: 1,
-        password: 1
-      })
-      this.users.createIndex({ email: 1 }, { unique: true })
-      this.users.createIndex({ username: 1 }, { unique: true })
-      this.users.createIndex(
+    const indexes = await this.users.indexes()
+    const indexNames = indexes.map(index => index.name)
+
+    const requiredIndexes = [
+      'email_1',
+      'email_1_password_1',
+      'username_1',
+      'name_text'
+    ]
+
+    const missingIndexes = requiredIndexes.filter(name => !indexNames.includes(name))
+
+    if (missingIndexes.length > 0) {
+      // Composite index (email + password) - phục vụ login
+      await this.users.createIndex({ email: 1, password: 1 })
+
+      // Unique index cho email và username
+      await this.users.createIndex({ email: 1 }, { unique: true })
+      await this.users.createIndex({ username: 1 }, { unique: true })
+
+      // Text index cho tìm kiếm tên
+      await this.users.createIndex(
+        { name: 'text' },
         {
-          name: 'text'
-        },
-        { default_language: 'none' }
+          default_language: 'none',
+          name: 'name_text'
+        }
       )
     }
   }

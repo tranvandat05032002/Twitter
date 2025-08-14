@@ -125,7 +125,6 @@ export const handleLikeNotification = async (
 
         // Chưa đọc thông báo
         const unreadCount = await notifyService.countUnreadNotifications(receiver_id)
-        console.log("unreadCount ----> ", unreadCount)
         io.to(receiverSocketId).emit('notify:update', {
             unread_count: unreadCount
         })

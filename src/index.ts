@@ -10,7 +10,7 @@ import path from 'path'
 import YAML from 'yaml'
 import mediasRouter from './routes/medias.routes'
 import { initFolder } from './utils/file'
-import { UPLOAD_VIDEO_DIR } from './constants/dir'
+import { UPLOAD_VIDEO_DIR, UPLOAD_VOICE_DIR } from './constants/dir'
 import staticRouter from './routes/statics.routes'
 import { tweetRouter } from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
@@ -80,6 +80,7 @@ app.use('/comment', commentsRouter)
 app.use('/story', storiesRouter)
 app.use('/notifications', notificationsRouter)
 app.use('/static/video', express.static(UPLOAD_VIDEO_DIR))
+app.use("/static/voice", express.static(UPLOAD_VOICE_DIR));
 
 //Other routes
 app.use('/metrics', metricsRouter)

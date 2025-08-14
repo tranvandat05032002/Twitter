@@ -5,9 +5,6 @@ export const registerCallHandlers = (io: Server, socket: Socket) => {
 
     // Khi có người gọi
     socket.on('call-user', ({ userrToCall, signalData, from }) => {
-        console.log("userrToCall ---> ", userrToCall)
-        console.log("signalData ---> ", signalData)
-        console.log("from ---> ", from)
         io.to(userrToCall).emit('call-made', {
             signal: signalData,
             from,

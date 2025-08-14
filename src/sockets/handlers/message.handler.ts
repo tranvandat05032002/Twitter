@@ -19,13 +19,13 @@ export const registerMessageHandlers = (io: Server, socket: Socket) => {
 
     socket.on('send_message', async (data: IMessage) => {
         const { sender_id, receiver_id, text } = data
-        const conversation = {
-            sender_id: new ObjectId(sender_id),
-            receiver_id: new ObjectId(receiver_id),
-            content: text
-        }
+        // const conversation = {
+        //     sender_id: new ObjectId(sender_id),
+        //     receiver_id: new ObjectId(receiver_id),
+        //     content: text
+        // }
 
-        await databaseService.conversations.insertOne(conversation)
+        // await databaseService.conversations.insertOne(conversation)
 
         const receiverSocketId = users.get(receiver_id)
         if (receiverSocketId) {

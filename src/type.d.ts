@@ -11,5 +11,6 @@ declare module 'express' {
     decoded_forgot_password_token?: TokenPayload
     decoded_otp_token?: OTPPayload
     tweet?: Tweet
+    file?: Express.Multer.File
   }
 }

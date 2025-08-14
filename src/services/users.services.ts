@@ -23,6 +23,7 @@ import { redisKey } from '~/utils/cacheKey'
 import { getCache } from '~/utils/redisRead'
 import { setCache } from '~/utils/redisWrite'
 import { publishUserUpdated } from '~/kafka/users.publish'
+import getRedisTTL from '~/utils/yaml'
 
 interface INodeMailer {
   from?: string
@@ -526,7 +527,7 @@ class UsersService {
         user: null
       }
     }
-    await setCache(redisKey.userMe(user_id), user, 600)
+    await setCache(redisKey.userMe(user_id), user, getRedisTTL())
     return {
       user
     }
@@ -568,6 +569,15 @@ class UsersService {
     return updateUser
   }
   public async getProfile(username: string, currentUserId: string) {
+    const cacheKey = redisKey.userProfile(username)
+    const userCached = await getCache<{
+      user: User;
+      is_following: boolean;
+    }>(cacheKey);
+    if (userCached) {
+      return userCached;
+    }
+
     const user = await databaseService.users.findOne(
       {
         username
@@ -589,16 +599,22 @@ class UsersService {
       })
     }
 
+    const plainUser = JSON.parse(JSON.stringify(user))
+
     // Kiểm tra xem currentUser có theo dõi user này không
     const isFollowing = await databaseService.followers.findOne({
       user_id: new ObjectId(currentUserId),
       followed_user_id: user._id
     })
 
-    return {
+    const result = {
       ...user,
-      is_following: Boolean(isFollowing)
-    }
+      is_following: Boolean(isFollowing),
+    };
+
+    await setCache(cacheKey, result, getRedisTTL());
+
+    return result
   }
   public async getProfileUserId(userId: string) {
     const user = await databaseService.users.findOne(
