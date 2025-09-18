@@ -11,10 +11,18 @@ export interface MessageReqBody {
   sender_id: string
   text: string
   type: MessageType
+
+  // Voice
+  duration?: number
+  codec?: number[]
   created_at: Date
   updated_at: Date
 }
 export interface MessageReqParams extends ParamsDictionary {
   chatId: string
+}
+export interface UpdateMessageReqParams extends ParamsDictionary {
+  messageId: string
+  content: string
 }
 export interface MessageQuery extends Pagination, Query { }

@@ -17,11 +17,12 @@ import { rimrafSync } from 'rimraf'
 import { execFile } from "child_process";
 import ffmpegPath from "ffmpeg-static"; // Sử dụng ffmpeg-static thay vì fluent-ffmpeg
 import ffprobePath from "@ffprobe-installer/ffprobe";
-
+const BAR_COUNT = 48;
 interface UploadVoiceResponse {
   url: string;
   duration: number;
   codec: string;
+  peaks: number[];
 }
 
 class Queue {
@@ -276,13 +277,15 @@ class MediaService {
     try {
       // Lấy duration của file
       const duration = await probeDuration(inputPath);
-
       // Tạo tên file đầu ra và đường dẫn
       const outName = path.basename(inputPath, ".webm") + ".m4a";
       const outPath = path.join(path.dirname(inputPath), outName);
 
       // Chuyển đổi tệp âm thanh sang m4a
       await convertToM4A(inputPath, outPath);
+
+      // Generate peaks từ file .m4a
+      // const peaks = await generatePeaks(outPath, BAR_COUNT);
 
       // Trả về URL file và thông tin liên quan
       const url = `http://localhost:4000/static/voice/${outName}`;
@@ -331,6 +334,25 @@ function convertToM4A(input: string, output: string): Promise<void> {
       }
       console.log(`Conversion complete: ${stdout}`);
       resolve();
+    });
+  });
+}
+
+function generatePeaks(filePath: string, barCount: number): Promise<number[]> {
+  return new Promise((resolve, reject) => {
+    const jsonFile = path.join(__dirname, "tmp_peaks.json");
+    execFile("audiowaveform", [
+      "--input-filename", filePath,
+      "--output-format", "json",
+      "--output-filename", jsonFile,
+      "--pixels-per-second", (barCount / 2).toString() // điều chỉnh mật độ
+    ], (err) => {
+      if (err) return reject(err);
+      const data = require(jsonFile);
+      const peaks: number[] = data.data.map((v: number) =>
+        Math.max(0.12, v / 32767) // chuẩn hóa về 0..1 và min height
+      );
+      resolve(peaks);
     });
   });
 }

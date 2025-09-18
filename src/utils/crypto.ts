@@ -4,6 +4,9 @@ import { envConfig } from '~/constants/config'
 export const sha256 = (content: string) => {
   return createHash('sha256').update(content).digest('hex')
 }
+export const base64URL = (content: string) => {
+  return createHash('sha256').update(content).digest('base64url')
+}
 export const hashPassword = (password: string) => {
   return sha256(password + envConfig.passwordSecret)
 }

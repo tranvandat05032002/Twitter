@@ -7,8 +7,14 @@ interface IMessage {
   sender_id: ObjectId
   text: string
   type: MessageType
+  duration?: number
+  codec?: number[]
   created_at?: Date
+  created_by?: ObjectId
   updated_at?: Date
+  upadted_by?: ObjectId
+  deleted_at?: Date
+  deleted_by?: ObjectId
 }
 
 export default class Message {
@@ -17,8 +23,14 @@ export default class Message {
   sender_id: ObjectId
   text: string
   type: MessageType
+  duration?: number
+  codec?: number[]
   created_at?: Date
+  created_by: ObjectId
   updated_at?: Date
+  updated_by?: ObjectId
+  deleted_at?: Date
+  deteled_by?: ObjectId
   constructor(message: IMessage) {
     const date = new Date()
       ; (this._id = message._id || new ObjectId()),
@@ -26,7 +38,11 @@ export default class Message {
         (this.sender_id = message.sender_id),
         (this.text = message.text),
         (this.type = message.type),
+        (this.duration = message.duration),
+        (this.codec = message.codec),
         (this.created_at = message.created_at ? message.created_at : date),
-        (this.updated_at = message.updated_at ? message.updated_at : date)
+        (this.created_by = message.created_by ? message.created_by : message.sender_id),
+        (this.updated_at = message.updated_at ? message.updated_at : undefined),
+        (this.deleted_at = message.deleted_at ? message.deleted_at : undefined)
   }
 }

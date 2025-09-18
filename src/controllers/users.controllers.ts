@@ -26,10 +26,14 @@ import databaseService from '~/services/database.services'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { UserVerifyStatus } from '~/constants/enum'
 import { envConfig } from '~/constants/config'
+import { normalizeIp } from '~/utils/ip'
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
-  const result = await usersService.login({ user_id: user_id.toString(), verify: UserVerifyStatus.Verified })
+  const ip = (req.headers['x-forwarded-for'] as string) || req.ip || "unknown";
+  const normalizedIp = normalizeIp(ip)
+
+  const result = await usersService.login({ user_id: user_id.toString(), verify: UserVerifyStatus.Verified, ip: normalizedIp })
 
   return res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,

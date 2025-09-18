@@ -81,6 +81,7 @@
     "socket.io": "^4.7.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
+    "testcontainers": "^11.5.1",
     "yaml": "^2.3.4"
   },
   "optionalDependencies": {

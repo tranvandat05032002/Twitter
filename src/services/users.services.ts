@@ -1,14 +1,13 @@
 import User from '~/models/schemas/User.chema'
 import databaseService from './database.services'
 import { IRegisterReqBody, UpdateMeReqBody } from '~/models/request/User.requests'
-import { hashPassword } from '~/utils/crypto'
+import { base64URL, hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
 import { TokenType, UserVerifyStatus } from '~/constants/enum'
 import { ObjectId } from 'mongodb'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import { USERS_MESSAGES } from '~/constants/message'
 import nodemailer from 'nodemailer'
-import { htmlVerify } from '~/html'
 import { generateOTP } from '~/utils/handlers'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -16,12 +15,12 @@ import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import Follower from '~/models/schemas/Follow.schema'
 import axios from 'axios'
-import { sendVerifyEmail, sendVerifyRegisterEmail } from '~/utils/email'
+import { sendVerifyRegisterEmail } from '~/utils/email'
 import { envConfig } from '~/constants/config'
 import { sendVerifyResetPasswordEmail } from '~/utils/otp'
 import { redisKey } from '~/utils/cacheKey'
-import { getCache } from '~/utils/redisRead'
-import { setCache } from '~/utils/redisWrite'
+import { getCache, redisRead } from '~/utils/redis/redisRead'
+import { fixedWindowLimit, redisWrite, setCache } from '~/utils/redis/redisWrite'
 import { publishUserUpdated } from '~/kafka/users.publish'
 import getRedisTTL from '~/utils/yaml'
 
@@ -177,20 +176,74 @@ class UsersService {
       email_verify_token
     }
   }
-  public async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
-    const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id, verify })
-    const decodedRefreshToken = await this.decodedRefreshToken(refresh_token)
-    await databaseService.RefreshTokens.insertOne(
-      new RefreshToken({
-        user_id: new ObjectId(user_id),
-        token: refresh_token,
-        iat: decodedRefreshToken.iat as number,
-        exp: decodedRefreshToken.exp
+  // Tạm khóa tài khoản
+  private async isLock(user_id: string) {
+    return (await redisRead.ttl(redisKey.lockLogin(user_id))) > 0
+  }
+  private async lockAccount(user_id: string, seconds: number) {
+    await redisWrite.set(redisKey.lockLogin(user_id), '1', 'EX', seconds)
+  }
+  // Distributed lock: chống double submit
+  private async acquireLoginLock(user_id: string, ms = 5000) {
+    const val = base64URL(user_id)
+    const ok = await redisWrite.set(redisKey.lockOnce(user_id), val, 'PX', ms, 'NX')
+    return ok ? val : null
+  }
+  private async releaseLoginLock(user_id: string, val: string) {
+    // Lua đảm bảo chỉ chủ lock được thả
+    const lua = `
+      if redis.call("GET", KEYS[1]) == ARGV[1] then
+        return redis.call("DEL", KEYS[1])
+      else
+        return 0
+      end
+    `
+    await redisWrite.eval(lua, 1, redisKey.lockOnce(user_id), val)
+  }
+  public async login({ user_id, verify, ip }: { user_id: string; verify: UserVerifyStatus; ip: string }) {
+    // Rate limit IP
+    const keyIp = redisKey.loginIp(ip)
+    const keyUser = redisKey.loginToken(user_id)
+    const passIp = await fixedWindowLimit(keyIp, 10, 60)
+    const passToken = await fixedWindowLimit(keyUser, 5, 60)
+    if (!passIp || !passToken) {
+      throw new ErrorWithStatus({
+        message: "Có vẻ bạn đăng nhập quá nhiều lần, hãy thử lại sau",
+        status: 429
       })
-    )
-    return {
-      access_token,
-      refresh_token
+    }
+    // Chặn nếu như đang tạm bị lock
+    if (await this.isLock(user_id)) {
+      throw new ErrorWithStatus({
+        message: "Tài khoản tạm thời đang bị khóa, vui lòng thử lại sau",
+        status: 423
+      })
+    }
+    // Chống double submit
+    const lockVal = await this.acquireLoginLock(user_id, 10000)
+    if (!lockVal) {
+      throw new ErrorWithStatus({
+        message: 'Vui lòng không thao tác quá nhanh',
+        status: 409
+      })
+    }
+    try {
+      const [access_token, refresh_token] = await this.SignAccessAndRefreshToken({ user_id, verify })
+      const decodedRefreshToken = await this.decodedRefreshToken(refresh_token)
+      await databaseService.RefreshTokens.insertOne(
+        new RefreshToken({
+          user_id: new ObjectId(user_id),
+          token: refresh_token,
+          iat: decodedRefreshToken.iat as number,
+          exp: decodedRefreshToken.exp
+        })
+      )
+      return {
+        access_token,
+        refresh_token
+      }
+    } finally {
+      await this.releaseLoginLock(user_id, lockVal)
     }
   }
   private async getGoogleAuthToken(code: string) {

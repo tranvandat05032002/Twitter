@@ -57,6 +57,9 @@ const limiter = rateLimit({
   legacyHeaders: false // Disable the `X-RateLimit-*` headers.
 })
 
+// Loại bỏ reverse proxy nếu có
+app.set('trust proxy', 1)
+
 app.use(limiter)
 initSocket(httpServer)
 
