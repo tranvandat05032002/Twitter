@@ -2,8 +2,16 @@ cache:
   ttl: 86400
   enabled: true
   master:
-    host: "127.0.0.1"
+    host: '127.0.0.1'
     port: 6379
   slaves:
-    - host: "127.0.0.1"
+    - host: '127.0.0.1'
       port: 6479
+elastic:
+  host: '127.0.0.1'
+  port: 9200
+  username: elastic
+  password: 35701537Scss
+  token: AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYTpzaU5VLVRRTFF3cUZUYTlPdXhIV1ZR
+  max_retry: 3
+  request_timeout: 30000

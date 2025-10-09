@@ -4,6 +4,8 @@ import Tweet from '~/models/schemas/Tweet.schema'
 import { ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { TweetType } from '~/constants/enum'
+import { esSearchMyTweetsPaged } from '~/es/search/tweet.search'
+import { bulkDeleteTweetsByIds, bulkIndexTweets, mapMongoTweetToES } from '~/es/write/tweet.write'
 
 class TweetService {
   public async checkAndCreateHashtags(hashtags: string[]) {
@@ -587,9 +589,193 @@ class TweetService {
     return { tweets, total: total[0]?.total || 0 };
   }
 
+  /** Hydrate theo danh sách id và GIỮ THỨ TỰ như ES trả về */
+  private async hydrateTweetsByIdsInOrder(idsObj: ObjectId[], user_id_obj: ObjectId) {
+    const tweets = await databaseService.tweets
+      .aggregate([
+        { $match: { _id: { $in: idsObj } } },
+        { $addFields: { order: { $indexOfArray: [idsObj, '$_id'] } } },
+        { $sort: { order: 1 } },
+
+        { $lookup: { from: 'users', localField: 'user_id', foreignField: '_id', as: 'user' } },
+        { $unwind: { path: '$user' } },
+        {
+          $match: {
+            $or: [
+              { audience: 0 },
+              { $and: [{ audience: 1 }, { 'user.twitter_circle': { $in: [user_id_obj] } }] }
+            ]
+          }
+        },
+
+        { $lookup: { from: 'hashtags', localField: 'hashtags', foreignField: '_id', as: 'hashtags' } },
+        { $lookup: { from: 'users', localField: 'mentions', foreignField: '_id', as: 'mentions' } },
+        {
+          $addFields: {
+            hashtags: {
+              $map: { input: '$hashtags', as: 'tag', in: { _id: '$$tag._id', name: '$$tag.name' } }
+            }
+          }
+        },
+        { $lookup: { from: 'bookmarks', localField: '_id', foreignField: 'tweet_id', as: 'bookmarks' } },
+        {
+          $lookup: {
+            from: 'bookmarks',
+            let: { tweetId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$tweet_id', '$$tweetId'] },
+                      { $eq: ['$user_id', user_id_obj] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'bookmarked_docs'
+          }
+        },
+        { $addFields: { bookmarked: { $gt: [{ $size: '$bookmarked_docs' }, 0] } } },
+        { $lookup: { from: 'likes', localField: '_id', foreignField: 'tweet_id', as: 'likes' } },
+        { $lookup: { from: 'tweets', localField: '_id', foreignField: 'parent_id', as: 'tweet_children' } },
+        {
+          $lookup: {
+            from: 'comments',
+            let: { tweetId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$tweet_id', '$$tweetId'] },
+                      { $eq: ['$deleted_at', null] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'comments'
+          }
+        },
+        {
+          $addFields: {
+            bookmarks: { $size: '$bookmarks' },
+            likes: { $size: '$likes' },
+            comments: { $size: '$comments' },
+            views: { $add: ['$guest_views', '$user_views'] },
+            retweet_count: {
+              $size: {
+                $filter: { input: '$tweet_children', as: 'tweet', cond: { $eq: ['$$tweet.type', TweetType.Retweet] } }
+              }
+            },
+            comment_count: {
+              $size: {
+                $filter: { input: '$tweet_children', as: 'tweet', cond: { $eq: ['$$tweet.type', TweetType.Comment] } }
+              }
+            },
+            quote_count: {
+              $size: {
+                $filter: { input: '$tweet_children', as: 'tweet', cond: { $eq: ['$$tweet.type', TweetType.QuoteTweet] } }
+              }
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'likes',
+            let: { tweetId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$tweet_id', '$$tweetId'] },
+                      { $eq: ['$user_id', user_id_obj] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'liked_docs'
+          }
+        },
+        { $addFields: { liked: { $gt: [{ $size: '$liked_docs' }, 0] } } },
+        {
+          $project: {
+            order: 0,
+            tweet_children: 0,
+            liked_docs: 0,
+            user: {
+              password: 0, date_of_birth: 0, email_verify_token: 0,
+              forgot_password_token: 0, twitter_circle: 0
+            }
+          }
+        }
+      ])
+      .toArray();
+
+    return tweets;
+  }
+
   public async getMyTweet({ user_id, limit, page }: { user_id: string; limit: number; page: number }) {
     const user_id_obj = new ObjectId(user_id);
+    console.log("Running")
+    // 1) Thử lấy khung trang từ ES
+    let esIds: string[] = [];
+    let esTotal = 0;
+    let esVersions = new Map<string, string | undefined>();
+    let esFailed = false;
 
+    try {
+      console.log("Running 2")
+      const es = await esSearchMyTweetsPaged(user_id, page, limit);
+      console.log("ES ----> ", es)
+      esIds = es.ids;
+      esTotal = es.total;
+      esVersions = es.versions;
+    } catch (e) {
+      esFailed = true;
+    }
+
+    // ES có id → hydrate theo đúng thứ tự
+    if (!esFailed && esIds.length > 0) {
+      const idsObj = esIds.map((s) => new ObjectId(s));
+      const tweets = await this.hydrateTweetsByIdsInOrder(idsObj, user_id_obj);
+
+      // 2) Reconcile: nếu DB và ES khác nhau → write-behind đồng bộ ES
+      // a) Thiếu trên ES: (tweet từ DB nhưng không có trong esIds) — thường không xảy ra vì match theo ids
+      const dbIds = tweets.map((t: any) => String(t._id));
+      const missingOnES = dbIds.filter(id => !esIds.includes(id));
+
+      // b) Stale trên ES: updated_at khác
+      const staleOnES: string[] = [];
+      for (const t of tweets) {
+        const id = String(t._id);
+        const esU = esVersions.get(id);
+        const dbU = new Date(t.updated_at).toISOString();
+        if (!esU || esU !== dbU) staleOnES.push(id);
+      }
+
+      // c) (Tuỳ chọn) Dư trên ES: ES có id nhưng DB không trả (có thể do xoá) → xoá ES
+      const missingOnDB = esIds.filter(id => !dbIds.includes(id));
+
+      // 3) Write-behind: upsert các doc stale/thiếu; delete doc dư
+      if (missingOnES.length || staleOnES.length) {
+        const needUpsertSet = new Set([...missingOnES, ...staleOnES]);
+        const needUpsertDocs = tweets.filter((t: any) => needUpsertSet.has(String(t._id))).map(mapMongoTweetToES);
+        void bulkIndexTweets(needUpsertDocs).catch(console.error);
+      }
+      if (missingOnDB.length) {
+        void bulkDeleteTweetsByIds(missingOnDB).catch(console.error);
+      }
+
+      return { tweets, total: esTotal };
+    }
+
+
+    // Trường hợp miss ở ES thì truy vấn ở DB và sau đó sync lại dữ liệu vào ES
     const [tweets, total] = await Promise.all([
       databaseService.tweets
         .aggregate([
@@ -876,6 +1062,7 @@ class TweetService {
         .toArray()
     ]);
 
+    void bulkIndexTweets(tweets.map(mapMongoTweetToES)).catch(console.error);
     return { tweets, total: total[0]?.total || 0 };
   }
 

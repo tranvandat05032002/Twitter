@@ -17,7 +17,7 @@ services:
         soft: -1
         hard: -1
     ports:
-      - "9200:9200"
+      - '9200:9200'
     networks:
       - meteor-social
     volumes:
@@ -29,10 +29,10 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_SERVICE_ACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYTpzaU5VLVRRTFF3cUZUYTlPdXhIV1ZR
+      - ELASTICSEARCH_HOSTS=http://localhost:9200
+      - ELASTICSEARCH_SERVICE_ACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbi0wMTpGb0xZRjA0Q1I3U3VKUTZERlNpbHdn
     ports:
-      - "5601:5601"
+      - '5601:5601'
     networks:
       - meteor-social
 

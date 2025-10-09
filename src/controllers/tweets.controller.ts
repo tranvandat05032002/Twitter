@@ -74,7 +74,7 @@ export const deleteTweetController = async (
 ) => {
   const { tweet_id } = req.params
   await tweetService.deleteTweet(tweet_id)
-  let message = TWEETS_MESSAGES.TWEET_DELETE_SUCCESS
+  const message = TWEETS_MESSAGES.TWEET_DELETE_SUCCESS
   res.json({
     message,
   })

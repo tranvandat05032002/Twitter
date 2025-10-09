@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "title": {
+      "type": "text",
+      "fields": {
+        "keyword": { "type": "keyword", "ignore_above": 256 },
+        "suggest": { "type": "text", "analyzer": "edge_ngram_analyzer" }
+      }
+    },
+    "body": { "type": "text" },
+    "tags": { "type": "keyword" },
+    "author": { "type": "keyword", "normalizer": "lower_ascii" },
+    "created_at": { "type": "date" }
+  }
+}

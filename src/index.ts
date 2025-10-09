@@ -31,6 +31,7 @@ import initSocket from './sockets/init'
 import { notificationsRouter } from './routes/notifications.routes'
 import { connectProducer } from './kafka/producer';
 import { startConsumer } from './kafka/consumer';
+import { checkElasticsearch } from './es'
 // import '~/utils/fake'
 const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 const swaggerDocument = YAML.parse(file)
@@ -99,4 +100,12 @@ async function bootstrap() {
   console.log('✅ Kafka Producer & Consumer started!');
 }
 
+
 bootstrap();
+async function ESBootstrap() {
+  const esOk = await checkElasticsearch();
+  if (!esOk) {
+    process.exit(1); // Dừng server nếu ES không kết nối được
+  }
+}
+ESBootstrap()

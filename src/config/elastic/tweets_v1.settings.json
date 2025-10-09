@@ -1,0 +1,27 @@
+{
+  "index": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "refresh_interval": "1s",
+    "analysis": {
+      "normalizer": {
+        "lower_ascii": { "type": "custom", "char_filter": [], "filter": ["lowercase", "asciifolding"] }
+      },
+      "analyzer": {
+        "edge_ngram_analyzer": {
+          "type": "custom",
+          "tokenizer": "edge_ngram_tokenizer",
+          "filter": ["lowercase", "asciifolding"]
+        }
+      },
+      "tokenizer": {
+        "edge_ngram_tokenizer": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 15,
+          "token_chars": ["letter", "digit"]
+        }
+      }
+    }
+  }
+}
