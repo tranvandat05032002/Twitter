@@ -6,6 +6,7 @@ import { verifyToken } from './jwt'
 import { normalization } from './handlers'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { envConfig } from '~/constants/config'
+import ms from "ms"
 
 export const verifyAccessToken = async (access_token: string, req?: Request) => {
   if (!access_token) {
@@ -20,7 +21,7 @@ export const verifyAccessToken = async (access_token: string, req?: Request) => 
       secretOrPublicKey: envConfig.jwtSecretAccessToken as string
     })
     if (req) {
-      ;(req as Request).decoded_authorization = decoded_authorization
+      ; (req as Request).decoded_authorization = decoded_authorization
       return true
     }
     return decoded_authorization

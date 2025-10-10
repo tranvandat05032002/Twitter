@@ -1,28 +1,31 @@
 import { ErrorEntity, ErrorWithStatus } from '../models/Errors'
-import express from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { validationResult, ValidationChain } from 'express-validator'
-import { RunnableValidationChains } from 'express-validator/src/middlewares/schema'
 import HTTP_STATUS from '~/constants/httpStatus'
 // can be reused by many routes
 // RunnableValidationChains<ValidationChain>
 // sequential processing, stops running validations chain if the previous one fails.
-export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
-  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    await validation.run(req)
-    const errors = validationResult(req)
-    if (errors.isEmpty()) {
-      return next()
-    }
-    const errorsObject = errors.mapped()
-    const errorEntity = new ErrorEntity({ errors: {} })
+type SingleError = { [key: string]: any; msg: string }
+type ErrorsType = Record<string, SingleError>
+
+export const validate = (chains: ValidationChain[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    await Promise.all(chains.map((c) => c.run(req)))
+
+    const result = validationResult(req)
+    if (result.isEmpty()) return next()
+
+    const errorsObject = result.mapped()
+    const errorEntity = new ErrorEntity({ errors: {} as ErrorsType })
+
     for (const key in errorsObject) {
       const { msg } = errorsObject[key]
       if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
         return next(msg)
       }
       errorEntity.errors[key] = errorsObject[key]
-      next(errorEntity)
     }
-    // res.status(422).json({ errors: errorsObject })
+
+    return next(errorEntity)
   }
 }

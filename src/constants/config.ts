@@ -1,6 +1,8 @@
 import { config } from 'dotenv'
 import fs from 'fs'
 import path from 'path'
+import type { StringValue } from "ms"
+
 const env = process.env.NODE_ENV
 const envFilename = `.env.${env}`
 if (!env) {
@@ -25,6 +27,7 @@ export const envConfig = {
   host: process.env.HOST as string,
   domain: process.env.DOMAIN as string,
   dbName: process.env.DB_NAME as string,
+
   dbUsername: process.env.DB_USERNAME as string,
   dbPassword: process.env.DB_PASSWORD as string,
   dbTweetsCollection: process.env.DB_TWEETS_COLLECTION as string,
@@ -41,6 +44,7 @@ export const envConfig = {
   dbMessageCollection: process.env.DB_MESSAGE_COLLECTION as string,
   dbCommentCollection: process.env.DB_COMMENT_COLLECTION as string,
   dbStoryCollection: process.env.DB_STORY_COLLECTION as string,
+
   jwtSecret: process.env.JWT_SECRET as string,
   passwordSecret: process.env.PASSWORD_SECRET as string,
   jwtSecretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN as string,
@@ -48,10 +52,12 @@ export const envConfig = {
   jwtSecretEmailVerifyToken: process.env.JWT_SECRET_EMAIL_TOKEN as string,
   jwtSecretForgotPasswordToken: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
   jwtSecretOTP: process.env.JWT_SECRET_OTP as string,
-  refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN as string,
-  accessTokenExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN as string,
-  emailVerifyTokenExpiresIn: process.env.VERIFY_EMAIL_TOKEN_EXPIRES_IN as string,
-  forgotPasswordTokenExpiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as string,
+
+  refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN as StringValue,
+  accessTokenExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN as StringValue,
+  emailVerifyTokenExpiresIn: process.env.VERIFY_EMAIL_TOKEN_EXPIRES_IN as StringValue,
+  forgotPasswordTokenExpiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as StringValue,
+
   googleClientId: process.env.GOOGLE_AUTH_CLIENT_ID as string,
   googleClientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET_KEY as string,
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI as string,
