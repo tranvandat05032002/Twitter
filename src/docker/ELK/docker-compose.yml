@@ -7,37 +7,40 @@ services:
       - cluster.name=es-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - xpack.security.enabled=true
       - ELASTIC_PASSWORD=35701537Scss
-      - xpack.security.transport.ssl.enabled=false
-      - xpack.security.http.ssl.enabled=false
+      - xpack.security.enabled=false
+      # - xpack.security.enrollment.enabled=true
+      # - xpack.security.http.ssl.enabled=true
+      # - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/http.p12
+      # Nếu lúc tạo http.p12 có đặt password:
+      # - xpack.security.http.ssl.keystore.password=<PASSWORD_KESTORE>
+      # - xpack.security.transport.ssl.enabled=true
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
     ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      memlock: { soft: -1, hard: -1 }
     ports:
       - '9200:9200'
-    networks:
-      - meteor-social
+    networks: [meteor-social]
     volumes:
       - es_data:/usr/share/elasticsearch/data
+      # Nếu bạn muốn giữ certs qua restart bằng volume riêng (khuyến nghị):
+      # - es_certs:/usr/share/elasticsearch/config/certs
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.0
     container_name: kibana
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://localhost:9200
-      - ELASTICSEARCH_SERVICE_ACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbi0wMTpGb0xZRjA0Q1I3U3VKUTZERlNpbHdn
+    depends_on: [elasticsearch]
+    # Enrollment sẽ tự cấu hình, VÌ THẾ GỠ các biến dưới:
+    # environment:
+    #   - ELASTICSEARCH_HOSTS=...
+    #   - ELASTICSEARCH_SERVICE_ACCOUNT_TOKEN=...
     ports:
       - '5601:5601'
-    networks:
-      - meteor-social
+    networks: [meteor-social]
 
 volumes:
   es_data:
+  # es_certs:   # nếu bạn dùng volume riêng cho certs
 
 networks:
   meteor-social:
