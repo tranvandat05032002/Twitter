@@ -32,6 +32,7 @@ export const envConfig = {
   dbPassword: process.env.DB_PASSWORD as string,
   dbTweetsCollection: process.env.DB_TWEETS_COLLECTION as string,
   dbUsersCollection: process.env.DB_USERS_COLLECTION as string,
+  dbOutboxesCollection: process.env.DB_OUTBOXES_COLLECTION as string,
   dbHashtagsCollection: process.env.DB_HASHTAG_COLLECTION as string,
   dbBookmarksCollection: process.env.DB_BOOKMARK_COLLECTION as string,
   dbLikesCollection: process.env.DB_LIKE_COLLECTION as string,

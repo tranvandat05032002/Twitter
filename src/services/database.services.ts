@@ -14,6 +14,7 @@ import Message from '~/models/schemas/Message.schema'
 import Comment from '~/models/schemas/Comment.shcema'
 import Story from '~/models/schemas/Story.schema'
 import Notification from '~/models/schemas/Notification.schema'
+import Outbox from '~/models/schemas/Outbox.schema'
 const uri = `mongodb+srv://${envConfig.dbUsername}:${envConfig.dbPassword}@twitter.7p9fnva.mongodb.net/?retryWrites=true&w=majority`
 class DatabaseService {
   private client: MongoClient
@@ -21,6 +22,9 @@ class DatabaseService {
   constructor() {
     this.client = new MongoClient(uri)
     this.db = this.client.db(envConfig.dbName)
+  }
+  public getClientInstance(): MongoClient {
+    return this.client
   }
   public async connect() {
     try {
@@ -119,6 +123,9 @@ class DatabaseService {
   }
   get users(): Collection<User> {
     return this.db.collection(envConfig.dbUsersCollection as string)
+  }
+  get outboxes(): Collection<Outbox> {
+    return this.db.collection(envConfig.dbOutboxesCollection as string)
   }
   get tweets(): Collection<Tweet> {
     return this.db.collection(envConfig.dbTweetsCollection as string)

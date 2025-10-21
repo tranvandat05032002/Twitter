@@ -1,23 +1,25 @@
 import { ObjectId } from 'mongodb'
 
-type TAggregateTypeLow = 'tweets' | 'user' | 'notification'
-type TAggregateTypeUp = 'TWEETS' | 'USERS' | 'NOTIFICATIONS'
-type TEventType = 'UPSERTED' | 'BACKFILL' | 'DELETED'
-type TStatus = 'pending' | 'processing' | 'sent' | 'error'
+type TAggregateType = 'tweets' | 'user' | 'notification'
+type TAggregate = {
+  type: TAggregateType
+  id: ObjectId
+} 
+type TEventType = 'created' | 'updated' | 'deleted'
+type TStatus = 'new' | 'dispatched' | 'failed'
 
 interface IOutbox {
   _id?: ObjectId
-  aggregate_type_low: TAggregateTypeLow
-  aggregate_type_up: TAggregateTypeUp
-  aggregate_id: ObjectId
-  aggregate_version: number
-  event_id: string
+  aggregate: TAggregate
   event_type: TEventType
-  payload: any // đã denormalize đủ cho ES
-  headers?: Record<string, string>
+  version: number
+  occurred_at: Date;
+  payload: any
+  metadata?: Record<string, any>;
   status: TStatus
-  attempts: number
-  available_at: Date
+  retry_count: number
+  error?: string | null;
+  produced_at?: Date | null;
 
   created_by: ObjectId
   created_at?: Date
@@ -27,19 +29,18 @@ interface IOutbox {
   deleted_at?: Date
 }
 
-class Outbox {
-  _id?: ObjectId
-  aggregate_type_low: TAggregateTypeLow
-  aggregate_type_up: TAggregateTypeUp
-  aggregate_id: ObjectId
-  aggregate_version: number
-  event_id: string
+export default class Outbox {
+  _id: ObjectId
+  aggregate: TAggregate
   event_type: TEventType
+  version: number
+  occurred_at: Date
   payload: any // đã denormalize đủ cho ES
-  headers?: Record<string, string>
+  metadata?: Record<string, any>
   status: TStatus
-  attempts: number
-  available_at: Date
+  retry_count: number
+  error?: string
+  headers?: Record<string, string>
 
   created_by?: ObjectId
   created_at?: Date
@@ -48,21 +49,17 @@ class Outbox {
   deleted_by?: ObjectId
   deleted_at?: Date
 
-  constructor(outbox: IOutbox) {
+  constructor(data: IOutbox) {
     const date = new Date()
-    this._id = outbox._id
-    this.aggregate_type_low = outbox.aggregate_type_low
-    this.aggregate_type_up = outbox.aggregate_type_up
-    this.aggregate_id = outbox.aggregate_id
-    this.aggregate_version = outbox.aggregate_version
-    this.event_id = outbox.event_id
-    this.event_type = outbox.event_type
-    this.status = outbox.status
-    this.attempts = outbox.attempts
-    this.available_at = date || new Date()
+
+    this._id = data._id || new ObjectId()
+    this.aggregate = data.aggregate
+    this.event_type = data.event_type
+    this.status = data.status
+    this.version = data.version
+    this.occurred_at = data.occurred_at
+    this.retry_count = data.retry_count
     this.created_at = date || new Date()
     this.updated_at = date || new Date()
   }
 }
-
-export default Outbox

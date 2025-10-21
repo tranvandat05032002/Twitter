@@ -1,11 +1,13 @@
 import { TweetReqBody } from '~/models/request/Tweet.request'
 import databaseService from './database.services'
 import Tweet from '~/models/schemas/Tweet.schema'
-import { ObjectId, WithId } from 'mongodb'
+import { InsertOneResult, ObjectId, WithId } from 'mongodb'
 import Hashtag from '~/models/schemas/Hashtag.schema'
 import { TweetType } from '~/constants/enum'
 import { esSearchMyTweetsPaged } from '~/es/search/tweet.search'
 import { bulkDeleteTweetsByIds, bulkIndexTweets, mapMongoTweetToES } from '~/es/write/tweet.write'
+import { getStartTime, reqTimeMeasure } from '~/utils/request'
+import Outbox from '~/models/schemas/Outbox.schema'
 
 type TweetDoc = {
   _id: ObjectId
@@ -56,24 +58,64 @@ class TweetService {
     return hashtagDocument.map((hashtag) => (hashtag.value as WithId<Hashtag>)._id)
   }
   public async createTweet(body: TweetReqBody, user_id: string) {
-    const hashtags = await this.checkAndCreateHashtags(body.hashtags)
-    const result = await databaseService.tweets.insertOne(
-      new Tweet({
-        type: body.type,
-        content: body.content,
-        audience: body.audience,
-        hashtags,
-        medias: body.medias,
-        parent_id: body.parent_id,
-        user_id: new ObjectId(user_id),
-        mentions: body.mentions
-      })
-    )
-    const tweet = await databaseService.tweets.findOne({
-      _id: result.insertedId
-    })
-    return tweet
+  const session = databaseService.getClientInstance().startSession();
+  try {
+    const hashtags = await this.checkAndCreateHashtags(body.hashtags);
+    const now = new Date();
+    const result = await session.withTransaction(async () => {
+      // 1) Insert tweet
+      const tweetRes = await databaseService.tweets.insertOne(
+        new Tweet({
+          type: body.type,
+          content: body.content,
+          audience: body.audience,
+          hashtags,
+          medias: body.medias,
+          parent_id: body.parent_id,
+          user_id: new ObjectId(user_id),
+          mentions: body.mentions,
+        }),
+        { session }
+      );
+
+      // 2) Insert outbox (đủ field)
+      await databaseService.outboxes.insertOne(
+        new Outbox({
+          aggregate: { type: 'tweets', id: tweetRes.insertedId },
+          event_type: 'created',
+          payload: {
+            _id: tweetRes.insertedId,
+            user_id: new ObjectId(user_id),
+            type: body.type,
+            content: body.content,
+            audience: body.audience,
+            hashtags,
+            medias: body.medias,
+            mentions: body.mentions,
+            parent_id: body.parent_id,
+            created_at: now,
+            updated_at: now,
+            is_deleted: false
+          },
+          occurred_at: now,
+          version: now.getTime(), // = Number(now)
+          status: 'new',
+          retry_count: 0,
+          produced_at: null,
+          created_by: new ObjectId(user_id)
+        }),
+        { session }
+      );
+    }, { writeConcern: { w: 'majority' } });
+
+    if (!result) throw new Error('Transaction aborted');
+    const tweet = await databaseService.tweets.findOne({ _id: result.insertedId });
+    return tweet;
+  } finally {
+    await session.endSession();
   }
+}
+
   public async increaseView(tweet_id: string, user_id?: string) {
     const tweetObjectId = new ObjectId(tweet_id)
 
